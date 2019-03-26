@@ -1,0 +1,752 @@
+---
+title: "Prof740"
+author: "Saeed"
+date: "March 22, 2019"
+output:
+  html_document:
+    highlight: pygments
+    number_sections: yes
+    self_contained: false
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+    df_print: paged
+  word_document:
+    toc: yes
+    toc_depth: '5'
+  pdf_document:
+    toc: yes
+    toc_depth: '5'
+    df_print: paged
+---
+```{r pressure, echo=FALSE,fig.cap="", out.width = '100%'}
+knitr::include_graphics("logo.png", auto_pdf = getOption("knitr.graphics.auto_pdf", FALSE), dpi = NULL)
+```
+
+```{r , echo=FALSE, message=FALSE, warning=FALSE,  fig.width=10,fig.height=11}
+#install.packages("dplyr")
+#install.packages("arules")
+#install.packages("arulesViz")
+library(arulesViz)
+library(arules)
+library(data.table)
+library(ggplot2)
+library(ggrepel)
+library(plotly)
+library(dplyr)
+require(graphics)
+require(gridExtra)
+library(party)
+library(rpart)
+library(rpart.plot)
+library(viridisLite)
+library(knitr)
+```
+
+\newpage
+# Executive Summary
+* The main objective of this project is to examine the associations between victimization, substance use, and suicide attempt among youth using the Youth Health Risk Behavior Survey data for the year 2013.
+* The data used consists of information from 1581 respondents, consist of Record Id & 28 variables that are categorized into 4 categories:
+
+    1. Demographic
+    2. Victimization
+    3. Suicide Attempt
+    4. Substance Use   
+
+* Each respondent is identified by a record ID and are mostly between the ages of 15-19 studying in grades 9-12. 
+
+* Most of the data consists of "Yes" / "No" answers to questions from the survey. 
+    * Among the victimization variables, most common "Yes" answer was to the question ‘Fought school 1+ times 12 months – around 15% of records
+    * Among the substance use variables, most common "Yes" answer was to the question ‘Tried marijuana 1+ times in life’ – around 50% of records
+    * Among the suicide attempts variables, most common "Yes" answer was to the question ‘Considered suicide 12 months – around 16% of records
+    * There are many NA/missing values in the dataset and after omitting these, we got 934 records that could be used for analysis. 
+    * In the data preparation stage, the following transformations and modifications are done. 
+    * Combining variables from each category into one variable each for victimization, substance use and suicide attempt
+    * Generating data in transaction format to do association analysis
+* In the first part of modeling, we used apriori algorithm to identify most common associations between victimization, suicide attempt and substance use. The major findings are:  
+    * There is association between suicide attempt and substance use at support of 17% and confidence of around 70%, but the association between suicide attempt and victimization is weaker at support of around 12% and confidence of around 49%. 
+    * The strongest association between individual variables is between qn27 (Considered suicide in last 12 months) and qn47 (Tried marijuana 1+ times in life) at support of around 11% and confidence of around 62%.
+* In the second part of modeling, we used decision tree machine learning techniques to automatically segment the class gradeand determine how well these derived groupings correspond to victimization and suicide attempt and predict ‘suicide attempt’ using the aggregated variables variables ‘victimization’ and ‘substance use’ for class ‘grade’. 
+
+
+\newpage
+# Business Understanding:
+
+## Objective:
+The main objective of this project is to examine the associations between victimization, substance use, and suicide attempt among youth using the Youth Health Risk Behavior Survey data for the year 2013. We will be using Apriori(an algorithm for frequent item set mining and association rule learning) and Decision Tree.    
+
+**Using the above mentioned algorithms we are going to answer the following questions:**    
+
+1. Are there relations between victimization (fighting, bullying, sexual abuse) and suicide attempt?    
+2. Are there relations between substance use (Tabaco, alcohol and other substance use) and suicide attempt?     
+3. Apply machine learning techniques to automatically segment the class grade into clusters and determine how well these derived groupings correspond to victimization and suicide attempt   
+
+##Motivation:
+Youth suicide is a substantial concern for health professionals, educators, lawmakers and society in general. Researchers have estimated that around 11% of all deaths among 12-19 year olds is due to suicide. It is assumed that there is high association between victimization, substance use and suicide attempt. Studying these associations will help in understanding youth behaviors and reducing adverse events. This type of analysis will also help doctors make decisions after taking into account the risk of suicide among their youth patients with history of victimization and/or substance use.    
+It is also critical to identify high risk groups who may be more associated with suicide attempt so that targeted preventive measures can be taken. For example, the CDC states that historical suicide rates for teens aged 15-19 years in the US differ significantly between genders.
+  
+
+## Description:
+The Youth Health Risk Behavior Survey is a biannual study undertaken by US CDC that monitors several categories of health-related behaviors among youth. The survey includes adolescents from grades 9-12 in the age group of 14-19 years. In our analysis, we consider behaviors related to victimization (fighting, bullying, sexual abuse, etc.), substance use (tobacco, alcohol, marijuana, etc.) and suicide attempt (considered suicide, attempted suicide, etc.).    
+
+The responses of the survey questions are initially processed by the CDC to identify logical inconsistencies, convert responses to usable form, create derived variables from responses, etc. We use a subset of the full data and analyze only demographic, victimization, substance use and suicide attempt information.
+
+
+\newpage
+# Data Understanding:  
+
+The dataset used in this project consists of Record ID that serves as a unique identifier, 4 demographic variables, 7 victimization variables, 4 suicide attempt variables and 13 substance use variables. The data is provided in csv format. 
+
+## Metadata Description      
+```{r, echo=FALSE}
+variableDescription <- read.csv('DataDescription.csv', header=TRUE)
+head(variableDescription, n=nrow(variableDescription))
+
+```
+      
+      
+## Loading, Retrieving, Viewing & Inspecting Data 
+**Load data**    
+```{r  }
+data <- read.csv("CaseStudy10_YouthHealthRiskBehavior_Data.csv",header = TRUE)
+
+#Overview on data structure(Number of observations and cols, type of variables and their values.)
+str(data)
+```
+
+```{r  }
+#Data Overview With Selected Cols 
+displayTable<-head(data[2:15], n=2)  
+knitr::kable(displayTable)
+
+```
+    
+
+It is clear that, there are many NA values in the data. This will be addressed in the next section.    
+
+## Demographic Variables Description
+**Description of the factor levels of demographic variables **    
+* Age(1= <=12 years old, 2=13 years old, 3=14 years old, 4=15 years old, 5=16 years old,
+6=17 years old, 7=18+ years old)     
+* Sex(1=Female, 2=Male)    
+* Race(1=White, 2=Black/African American, 3=Hispanic/Latino, 4=All other races)    
+Grade (1=9th, 2=10th, 3=11th, 4=12th)      
+
+Data from the questions are all dichotomous with levels "1", "2" or NA for missing value.     
+
+**Considering "1" corresponds to  "Yes" and "2" corresponds to a "No".**
+
+
+
+## Data Distribution Overview   
+
+```{r, echo=TRUE, message=FALSE, warning=FALSE, fig.width=10,fig.height=11}
+#This function takes the dataset and the cols to omit the na values
+omitNaForSpecificCols <- function(d, desiredCols) {
+    completeVec <- complete.cases(d[, desiredCols])
+    return(d[completeVec, ])
+}
+```
+
+```{r,  fig.width=10 ,fig.height=11}
+#Takes cols related to Demographic variables 
+#This will take the range of cols from 2 to 5 i.e(2(age),3(sex),4(grade),5(race))
+dataOverview<-data[, 2:5] 
+dataOverview$sex <- factor(dataOverview$sex, labels = c('Female','Male'), ordered = TRUE)
+dataOverview$age <- factor(dataOverview$age, labels = c('<=12','13','14','15','16','17',
+                                                        '18+'), 
+                           ordered = TRUE)
+dataOverview$race <- factor(dataOverview$race4, labels = 
+                                c('White','Black/African American','Hispanic/Latino',
+                                  'All other races'), ordered = TRUE)
+dataOverview$grade <- factor(dataOverview$grade, labels = c('9th','10th','11th','12th'), 
+                             ordered = TRUE)
+
+#Cleaning the data using omitNaForSpecificCols() created above.
+dataOverview<- omitNaForSpecificCols(dataOverview,c("sex","age","race","grade"))
+
+#Structure For Manipulated Data  
+str(dataOverview) 
+
+```
+\newpage 
+```{r,  fig.width=10,fig.height=11}
+#Data Summary
+summary(dataOverview)
+```
+```{r,  fig.width=10,fig.height=11}
+#Overview On Our Current Dataframe With Demographic Variables Only(As Is)
+
+displayTable<-head(dataOverview[1:4], n=5)  
+knitr::kable(displayTable)
+```
+```{r,fig.width=10,fig.height=11}
+
+#We notice many missing values; therefore, we are going to use the predefined cutom 
+#function "omitNaForSpecificCols"created above to omit the values whenever need for a 
+#specific/all cols needed for analysis
+
+```
+
+```{r, fig.width=10,fig.height=11 }
+#Grouping The Respondents By Sex
+cleanedData<-omitNaForSpecificCols(dataOverview, c("sex"))
+cleanedData<- cleanedData %>% group_by(sex) %>% summarize(count=n()) %>% 
+    arrange(desc(sex),.by_group = TRUE)
+knitr::kable(cleanedData)
+```
+```{r, fig.width=10,fig.height=11 }
+#Grouping The Respondents By Race
+cleanedData<-omitNaForSpecificCols(dataOverview, c("race"))
+cleanedData<- cleanedData %>% group_by(race) %>% summarize(count=n()) %>% 
+    arrange(desc(race),.by_group = TRUE)
+
+knitr::kable(cleanedData)
+
+ 
+```
+
+```{r, fig.width=10,fig.height=11 }
+#Grouping The Respondents By Sex & Race
+cleanedData<-omitNaForSpecificCols(dataOverview, c("sex","race"))
+cleanedData<-cleanedData %>% group_by(race, sex) %>% summarize(count=n()) %>% 
+    arrange(desc(race),.by_group = TRUE)
+
+knitr::kable(cleanedData)
+
+```
+
+```{r, fig.width=10,fig.height=11 }
+#Grouping The Respondents By Age
+cleanedData<-omitNaForSpecificCols(dataOverview, c("age"))
+cleanedData<- cleanedData %>% group_by(age) %>% summarize(count=n()) %>% 
+    arrange(desc(age),.by_group = TRUE)
+knitr::kable(cleanedData)
+ 
+```
+
+```{r, fig.width=10,fig.height=11 }
+#Grouping The Respondents By Age
+cleanedData<-omitNaForSpecificCols(dataOverview, c("grade"))
+cleanedData<- cleanedData %>% group_by(grade) %>% summarize(count=n()) %>% 
+    arrange(desc(grade),.by_group = TRUE)
+knitr::kable(cleanedData)
+ 
+```
+
+
+## Density Distribution For Age,Race,Sex & Grade of Respondents    
+
+```{r,  fig.width=10,fig.height=11}
+
+cleanedData<-omitNaForSpecificCols(dataOverview, c("sex","race","grade","age"))
+par(mfrow=c(2,2))
+plot(density(unclass(cleanedData$age)), xlab = "Age",main = "")
+plot(density(unclass(cleanedData$race)), xlab = "Race",main = "")
+plot(density(unclass(cleanedData$sex)), xlab = "Sex",main = "")
+plot(density(unclass(cleanedData$grade)), xlab = "Grade",main = "")
+
+
+``` 
+
+## Demographic Details(Age,Race,Sex & Grade) of Respondents    
+
+```{r,  fig.width=10,fig.height=11}
+cleanedData<-omitNaForSpecificCols(dataOverview, c("sex","race","grade","age"))
+#RESPONDENTS BY GENDER
+plot1<-ggplot(data = cleanedData, aes(x = sex,fill =sex)) + 
+        ggtitle("RESPONDENTS BY GENDER") + 
+        labs(x = "GENDER", y = "Number of respondents") + 
+        geom_bar(alpha = 0.7, col = 'black',show.legend = TRUE) 
+
+#RESPONDENTS BY AGE
+cleanedData<-omitNaForSpecificCols(dataOverview, c("age"))
+plot2<-ggplot(data =cleanedData, aes(x = age, fill =age)) + 
+        ggtitle("RESPONDENTS BY AGE") + 
+        labs(x = "Age(Years)", y = "Number of respondents") + 
+        geom_bar(alpha = 0.7, col = 'black',show.legend = TRUE)
+
+#Respondents by Grade
+cleanedData<-omitNaForSpecificCols(dataOverview, c("grade"))
+plot3<- ggplot(data = cleanedData, 
+           aes(x = grade, fill = grade)) + 
+        ggtitle("Respondents by Grade") + 
+        geom_bar(alpha = 0.7
+                     , col = 'black') 
+
+#RESPONDENTS BY RACE
+cleanedData<-omitNaForSpecificCols(dataOverview, c("race"))
+plot4<-ggplot(data = cleanedData, aes(x = race,fill =race)) + 
+        ggtitle("RESPONDENTS BY RACE") + 
+        labs(x = "RACE", y = "Number of respondents") + 
+        geom_bar(alpha = 0.7, col = 'black',show.legend = TRUE)  +
+          theme(axis.title.x=element_blank(),
+                axis.text.x=element_blank())
+
+
+#RESPONDENTS BY AGE  & GENDER
+cleanedData<-omitNaForSpecificCols(dataOverview, c("age","sex"))
+plot5<-ggplot(data = cleanedData, aes(x = age,fill =sex)) + 
+        ggtitle("RESPONDENTS BY AGE  & GENDER") + 
+        labs(x = "Age(Years)", y = "Number of respondents") + 
+        geom_bar(alpha = 0.7, col = 'black',show.legend = TRUE)
+
+#RESPONDENTS BY GRADE & RACE
+cleanedData<-omitNaForSpecificCols(dataOverview, c("race","grade"))
+plot6<-ggplot(cleanedData, aes(x = grade,fill =race)) + 
+        ggtitle("RESPONDENTS BY GRADE & RACE") + 
+        labs(x = "RACE", y = "Number of respondents") + 
+        geom_bar(alpha = 0.7, col = 'black',show.legend = TRUE) 
+
+
+
+#RESPONDENTS BY RACE & GENDER
+cleanedData<-omitNaForSpecificCols(dataOverview, c("sex","race"))
+plot7<-ggplot(data = cleanedData, aes(x = age,fill =sex)) + 
+        ggtitle("RESPONDENTS BY RACE  & GENDER") + 
+        labs(x = "Age(Years)", y = "Number of respondents") + 
+        geom_bar(alpha = 0.7, col = 'black',show.legend = TRUE)
+
+#RESPONDENTS BY GENDER & GRADE
+cleanedData<-omitNaForSpecificCols(dataOverview, c("sex","grade"))
+plot8<-ggplot(data = cleanedData, aes(x = age,fill =sex)) + 
+        ggtitle("RESPONDENTS BY GENDER  & GRADE") + 
+        labs(x = "Age(Years)", y = "Number of respondents") + 
+        geom_bar(alpha = 0.7, col = 'black',show.legend = TRUE)
+
+grid.arrange(plot1,plot2,plot3,plot4,plot5,plot6, ncol=2)
+
+```
+
+## Victimization Proportion For The Given Data 
+```{r }
+
+cleanedData<-omitNaForSpecificCols(data, c("qn16","qn17","qn19","qn20","qn21","qn24","qn25"))
+par(mfrow=c(2,4), mgp=c(1,2,1), mar=c(2,3,4,1))
+barplot(as.matrix(table(cleanedData$qn16)), xlab = 'Unsafe', col = c("red", "grey"))
+barplot(as.matrix(table(cleanedData$qn17)), xlab = 'Threatened', col = c("red", "grey"), 
+        axes=FALSE)
+barplot(as.matrix(table(cleanedData$qn19)), xlab = 'Injured', col = c("red", "grey"), 
+        axes=FALSE)
+barplot(as.matrix(table(cleanedData$qn20)), xlab = 'Fought', col = c("red", "grey"), 
+        axes=FALSE)
+barplot(as.matrix(table(cleanedData$qn21)), xlab = 'ForcedSex', col = c("red", "grey"))
+barplot(as.matrix(table(cleanedData$qn24)), xlab = 'Builled', col = c("red", "grey"), 
+        axes=FALSE)
+barplot(as.matrix(table(cleanedData$qn25)), xlab = 'Ebuilled', col = c("red", "grey"), 
+        axes=FALSE)
+plot(1, type = "n", axes=FALSE, xlab="", ylab="")
+legend(x="center", inset=1, legend=c("No", "Yes"), col=c("grey", "red"), lwd=5, cex=1)
+mtext("Split of Victimization variables", side = 3, outer = TRUE, line=-2)
+
+```
+
+**Victimization's highest percentage are:**    
+
+1. Fought school 1+ times 12 months : around 15%
+2. Missed school b/c unsafe 1+ 30 days : around 12%
+3. Bullied at school 12 months : around 12%
+
+
+## Substance Use Proportion For The Given Data 
+```{r }
+cleanedData<-omitNaForSpecificCols(data, c("qn33","qn37","qn43","qn45","qn47","qn50","qn51",
+                                           "qn52","qn53","qn54","qn55","qn56","qn57"))
+par(mfrow=c(2,7), mgp=c(1,1,1), mar=c(2,3,4,1))
+barplot(as.matrix(table(cleanedData$qn33)), xlab = 'Smoked Monthly', col = c("red", "grey"))
+barplot(as.matrix(table(cleanedData$qn37)), xlab = 'Smoked Daily', col = c("red", "grey"), 
+        axes=FALSE)
+barplot(as.matrix(table(cleanedData$qn43)), xlab = 'Drinks>=1', col = c("red", "grey"), 
+        axes=FALSE)
+barplot(as.matrix(table(cleanedData$qn45)), xlab = 'Drinks>=10', col = c("red", "grey"), 
+        axes=FALSE)
+barplot(as.matrix(table(cleanedData$qn47)), xlab = 'Marijuana>=1', col = c("red", "grey"), 
+        axes=FALSE)
+barplot(as.matrix(table(cleanedData$qn50)), xlab = 'Cocaine', col = c("red", "grey"), 
+        axes=FALSE)
+barplot(as.matrix(table(cleanedData$qn51)), xlab = 'Sniffed Glue', col = c("red", "grey"), 
+        axes=FALSE)
+barplot(as.matrix(table(cleanedData$qn52)), xlab = 'Heroin', col = c("red", "grey"))
+barplot(as.matrix(table(cleanedData$qn53)), xlab = 'Meth', col = c("red", "grey"), 
+        axes=FALSE)
+barplot(as.matrix(table(cleanedData$qn54)), xlab = 'Ecstasy', col = c("red", "grey"),
+        axes=FALSE)
+barplot(as.matrix(table(cleanedData$qn55)), xlab = 'Steroids', col = c("red", "grey"), 
+        axes=FALSE)
+barplot(as.matrix(table(cleanedData$qn56)), xlab = 'Prescription Drug', col = c("red", "grey"),
+        axes=FALSE)
+barplot(as.matrix(table(cleanedData$qn57)), xlab = 'Injected Drugs', col = c("red", "grey"), 
+        axes=FALSE)
+
+plot(1, type = "n", axes=FALSE, xlab="", ylab="")
+legend(x="center", inset=1, legend=c("No", "Yes"), col=c("grey", "red"), lwd=5, cex=1)
+mtext("Substance Use", side = 3, outer = TRUE, line=-2)
+
+```
+
+**Substance use highest percentage are:**    
+
+1.	Tried marijuana 1+ times in life : around 50%
+2.	Had 1+ drinks past 30 days : around 39%
+
+
+## Suicide Attempts Proportion For The Given Data 
+```{r }
+cleanedData<-omitNaForSpecificCols(data, c("qn27","qn28","qn29","qn30"))
+par(mfrow=c(2,4), mgp=c(1,1,1), mar=c(2,3,4,1))
+barplot(as.matrix(table(cleanedData$qn16)), xlab = 'Considered Suicide',
+        col = c("red", "grey"))
+barplot(as.matrix(table(cleanedData$qn17)), xlab = 'Made Suicide Plan',
+        col = c("red", "grey"), axes=FALSE)
+barplot(as.matrix(table(cleanedData$qn19)), xlab = 'Attempt Suicide',
+        col = c("red", "grey"), axes=FALSE)
+barplot(as.matrix(table(cleanedData$qn20)), xlab = 'Suicide With Or Without Injury', 
+        col = c("red", "grey"), 
+        axes=FALSE)
+plot(1, type = "n", axes=FALSE, xlab="", ylab="")
+legend(x="center", inset=1, legend=c("No", "Yes"), col=c("grey", "red"), lwd=5, cex=1)
+mtext("Substance Use", side = 3, outer = TRUE, line=-2)
+
+```
+
+**Suicide attempts highest percentage are:**    
+
+1.	Considered suicide 12 month : around 16%
+2.	Made suicide plan 12 moonth : around 14%
+
+
+\newpage
+# Data Preparation    
+
+In the above section, we noticed that there are many NA values in the data.
+We check the number of missing values in each field using the following:   
+```{r,  fig.width=10,fig.height=11}
+    sapply(data, function(x) sum(is.na(x)))
+```
+
+Question 29, question 30 and question 43 have the most NA values. These are ‘Attempted suicide 1+ times 12 months, ‘Suicide attempt with injury 12 months and ‘Had 1+ drinks past 30 days’.
+
+
+## Creating A Custom R Function To Handle Missing Data For Specific/All Observations
+**This function takes the dataset and the cols to omit the na values**    
+```{r,  fig.width=10,fig.height=11}
+omitNaForSpecificCols <- function(d, desiredCols) {
+    completeVec <- complete.cases(d[, desiredCols])
+    return(d[completeVec, ])
+}
+```
+
+
+## Cleaning The Data Using "omitNaForSpecificCols" Custom Function    
+
+```{r fig.width=10,fig.height=11}
+#Clean the overall data since we are going to use all variables except demographic
+dataCleaned<-omitNaForSpecificCols(data[0:29])
+
+#Confirm that, there is no missing values   
+sapply(dataCleaned, function(x) sum(is.na(x)))
+
+```
+
+```{r fig.width=10,fig.height=11}
+#View brief details of the cleaned data
+
+displayTable<- head(dataCleaned[1:3,2:10])
+knitr::kable(displayTable)
+
+```
+
+
+## Data Aggregation    
+In this section, we also do some data transformations that will help in analysis and modeling. Specifically, we do the following:    
+
+1.	Combine variables for victimization, suicide and substance use into one variable each.
+2.	Convert the clean data into transaction format to do association analysis
+The above steps are performed below.
+
+
+```{r fig.width=10,fig.height=11}
+# Initializing three aggregated columns for victimization,substance use and suicide attempt
+dataCleaned$victimization <- ""
+dataCleaned$substanceUse <- ""
+dataCleaned$suicideAttempt <- ""
+
+#Initializing descriptive headings for our dataset 
+
+headings<-c("Record","Age","Sex","Grade","Race","Unsafe","Threatened","Injured",
+            "Fought","ForcedSex","Builled","Ebuilled","ConsideredSuicide",
+            "MadeSuicidePlan","AttemptSuicide","SuicideWithOrWithoutInjury",
+            "SmokedMonth","SmokedDaily","Drinks1+","Drinks10+","Marijuana1+",
+            "Cocaine1+","SniffedGlue1+","Heroin1+","Meth1+","Ecstasy1+","Steroids1+",
+            "PrescriptionDrug","InjectedDrugs","victimization","substanceUse"
+            ,"suicideAttempt")
+
+
+#Adding a descriptive headings for our data
+colnames(dataCleaned)=headings
+
+#Combining variables into one for victimization, substance use and suicide attempt:
+
+#Get Victimization related variables from the dataset
+victimizationVariables<-colnames(dataCleaned[6:12]) 
+#View the headings
+head(victimizationVariables)
+#Convert 1 and 2 row values to 0 and 1, in order to represent Yes or No
+dataCleaned$victimization <- apply(dataCleaned[,c(victimizationVariables)], 1, 
+                                   function(r) ifelse(any(r %in% c("1")),1,0))
+
+
+#Get Substance use related variables from the dataset
+substanceVariables<-colnames(dataCleaned[17:29]) 
+#View the headings
+head(substanceVariables)
+#Convert 1 and 2 row values to 0 and 1, in order to represent Yes or No
+dataCleaned$substanceUse <- apply(dataCleaned[,c(substanceVariables)], 1, 
+                                  function(r) ifelse(any(r %in% c("1")),1,0))
+
+
+#Get Suicide related variables from the dataset
+suicideVariables<-colnames(dataCleaned[13:16]) 
+#View the headings
+head(suicideVariables)
+#Convert 1 and 2 row values to 0 and 1, in order to represent Yes or No
+dataCleaned$suicideAttempt <- apply(dataCleaned[,c(suicideVariables)], 1, 
+                                    function(r) ifelse(any(r %in% c("1")),1,0))
+
+#View brief details of aggregated data
+displayTable<-head(dataCleaned[30:32], n=5)
+knitr::kable(displayTable)
+
+```
+
+
+```{r fig.width=10,fig.height=11}   
+
+#Generating data in transaction format to do association rules analysis
+dataCleanedAggregatedTransactions <- data.frame(record=character(), qn=character(), 
+                                                stringsAsFactors=FALSE)
+for (i in 1:nrow(dataCleaned)){
+    #Here we use data from index 30:32 which is our aggregated cols
+    for (j in (ncol(dataCleaned)-2):ncol(dataCleaned)){ 
+        if (dataCleaned[i,j]==1){
+            temp <- data.frame(record=as.character(dataCleaned[i,1]), 
+                               qn=as.character(colnames(dataCleaned)[j]), 
+                               stringsAsFactors = FALSE)
+            dataCleanedAggregatedTransactions <- rbind(dataCleanedAggregatedTransactions, temp)
+        }
+    }
+}
+
+dataCleanedAggregatedTransactions <- 
+    as(split(dataCleanedAggregatedTransactions[,"qn"], 
+             dataCleanedAggregatedTransactions[,"record"]), "transactions")
+# Viewing summary of the generated data
+summary(dataCleanedAggregatedTransactions)
+crossTable(dataCleanedAggregatedTransactions)
+```
+
+```{r fig.width=10,fig.height=11}
+
+#Generating data in transaction format to do association rules analysis for all items
+dataCleanedTransactions <- data.frame(record=character(), qn=character(), 
+                                      stringsAsFactors=FALSE)
+for (i in 1:nrow(dataCleaned)){
+    #Here we start from index 6, excluding our demographic data
+    for (j in 6:(ncol(dataCleaned)-3)){
+        if (dataCleaned[i,j]=='1'){
+            temp <- data.frame(record=as.character(dataCleaned[i,1]),
+                               qn=as.character(colnames(dataCleaned)[j]), 
+                               stringsAsFactors = FALSE)
+            dataCleanedTransactions <- rbind(dataCleanedTransactions, temp)
+        }
+    }
+}
+
+dataCleanedTransactions <- as(split(dataCleanedTransactions[,"qn"], 
+                                    dataCleanedTransactions[,"record"]), "transactions")
+summary(dataCleanedTransactions)
+
+```
+
+\newpage
+# Modeling 
+
+## Association Rules Algorithms(Apriori & Eclat)
+
+### Generate Association Rules For All Itemsets Without Aggregation(Victimization,Substance & Suicide)  
+```{r fig.width=10,fig.height=11}
+
+#Getting frequent k-itemsets using eclat
+eclatRules <- eclat(dataCleanedTransactions, parameter = list(supp = 0.1,minlen=2))
+
+#inding strong association rules apriori
+aprioriRules <- apriori(dataCleanedTransactions, parameter = list(supp=0.1, 
+                                                                  minlen=2,confidence = 0.2))
+
+#Remove deplicate itemsets if you are using apriori(lhs,rhs)
+aprioriRules<-aprioriRules[-(which(duplicated(
+    generatingItemsets(aprioriRules))))]
+
+
+#Inspect the association rules generated apriori
+inspect(aprioriRules)
+
+```
+```{r fig.width=10,fig.height=11}
+#Inspect the association rules generated eclat
+inspect(eclatRules)
+
+```
+
+### Generate For All Itemsets With Aggregation(Victimization,Substance & Suicide) 
+
+```{r fig.width=10,fig.height=11}
+
+# Getting frequent k-itemsets
+eclatRules <- eclat(dataCleanedAggregatedTransactions, parameter = list(supp = 0.1,minlen=2))
+
+# Finding strong association rules
+aprioriAggregatedRules <- apriori(dataCleanedAggregatedTransactions, parameter = 
+                                      list(supp=0.1, minlen=2,  conf=0.2))
+#Remove deplicate itemsets if you are using apriori(lhs,rhs)
+aprioriAggregatedRules<-aprioriAggregatedRules[-(which(duplicated(
+    generatingItemsets(aprioriRules))))]
+
+#Inspect the association rules generated apriori
+inspect(aprioriAggregatedRules)
+
+```
+
+```{r fig.width=10,fig.height=11}
+#Inspect the association rules generated eclat
+inspect(eclatRules)
+```
+
+### Graphing The Strong Association Rules Without Aggregation(Victimization,Substance & Suicide) 
+```{r }
+#Graph of association rules for all items for minimum support of 0.1 
+#and minimum confidence of 0.2
+set.seed(1234)
+plot(aprioriRules, method='graph', shading='confidence', control=list(main="Graph of rules"))
+```
+
+
+### Graphing The Strong Association Rules With Aggregation(Victimization,Substance & Suicide) 
+```{r }
+#Graph of association rules Aggregating(Victimization,Substance & Suicide) 
+#for minimum support of 0.1 and minimum confidence of 0.2    
+set.seed(1234)
+plot(aprioriRules, method='graph', shading='confidence', control=list(main="Graph of Rules"))
+
+# The association between suicide attempt and substance use is stronger
+#than the association between suicide attempt and victimization
+
+```
+
+
+
+## Decision Tree
+
+Apply machine learning techniques to automatically segment the class grade and determine how well these derived groupings correspond to victimization and suicide attempt
+
+### Viewing the structure of the observations for class grade and it's relation with victimization and suicide attempts
+```{r }
+# Decision Tree to predict suicide attempt
+dtData <- dataCleaned[,c("Grade", "substanceUse", "victimization", "suicideAttempt")]
+dtData$substanceUse <- as.factor(dtData$substanceUse)
+dtData$victimization <- as.factor(dtData$victimization)
+dtData$suicideAttempt <- as.factor(dtData$suicideAttempt)
+str(dtData)
+```
+
+```{r }
+#View brief details of aggregated data
+
+displayTable<-head(dtData[,c("Grade","substanceUse", "victimization", "suicideAttempt")],
+                   n=10)
+knitr::kable(displayTable)
+
+```
+### Create Train and Test Samples
+```{r }
+# Create train and test datasets
+set.seed(1234)
+#Here we are creating two samples(Training(80%) & Test(20%))
+sdata<- sample(2, nrow(dtData), replace=TRUE, prob = c(0.8,0.2))
+trainData <- dtData[sdata==1,]
+#View dimension for our train data
+dim(trainData)
+```
+
+```{r }
+testData <- dtData[sdata==2,]
+#View dimension for our test data
+dim(testData)
+```
+### Create Model For Recursive Partitioning and Regression Tree
+```{r }
+#Create A Model
+dtModel<-rpart(Grade~substanceUse+victimization+suicideAttempt,trainData,method = "class",
+           control=rpart.control(minsplit=20, minbucket=1, cp = 0.001))
+
+#View the tree
+dtModel
+```
+### Visualization Model Decision Tree Based On Training Data
+```{r }
+#Visualization of decision tree
+rpart.plot(dtModel,type =2, extra=102)
+```
+
+### Creating Prediction Model 
+```{r }
+#Creating prediction model
+pModel<-rpart.predict(dtModel, testData, type = "class")
+
+plot(pModel)
+#View the prediction model
+```
+```{r }
+#Show the table of the results 
+table(testData[,4], pModel)
+
+```
+
+
+#Conclusion 
+In this project, we studied the Youth Health Risk Behavior using the Observational Data to examine the relations between victimization, substance use and suicide attempt. We used the apriori algorithm to understand strong associations and built a decision tree to understand what influences suicide attempt.
+The results of this project tells us that adolescents who consider or attempt suicide tend to use substances. By assessing whether an adolescent was victimized and by looking at their sex, it is possible to predict if they are more likely to consider or attempt suicide.   This type of analysis is very important from a medical point of view. It provides a data supported backing of what doctors seem to already believe through experience. This also shows the importance of using machine learning techniques to answer key questions and find solutions in society.
+Overall, we were successful in identifying associations between victimization, substance use and suicide attempt. We can further improve this project by experimenting with other algorithms like logistic regression and random forest and by considering other types of groupings like race.
+
+# References    
+
+* [AS94] R. Agrawal and R. Srikant, Fast Algorithms for Mining Association Rules (1994) Proc. 20th Int. Conf. Very Large Data Bases, VLDB-94. http://www.vldb.org/conf/1994/P487.PDF
+
+
+
+## Appendices
+**Load Required Libraries**
+```{r , message=FALSE, warning=FALSE,  fig.width=10,fig.height=11}
+#install.packages("dplyr")
+#install.packages("dplyr")
+#install.packages("arules")
+#install.packages("arulesViz")
+#library(knitr)
+#library(arulesViz)
+#library(arules)
+#library(arules)
+#library(arulesViz)
+#library(data.table)
+#library(ggplot2)
+#library(ggrepel)
+#library(plotly)
+#library(dplyr)
+#require(graphics)
+#require(gridExtra)
+#library(arules)
+#library(arulesViz)
+#library(party)
+#library(rpart)
+#library(rpart.plot)
+#library(viridisLite)
+```

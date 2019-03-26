@@ -1,0 +1,30 @@
+Variable,Description,Short Description
+record,Record ID of participant,Record
+age,Age of participant,Age
+sex, Sex of participant,Sex
+grade, Grade in which participant was studying,Grade
+race4, Race/ethnicity of participant,Race
+qn16,Unsafe at school 1 or more times in the past 30 days,Unsafe
+qn17,Threatened at school 1 or more times in the past 12 months,Threatened
+qn19,Injured at school 1 or more times in the past 12 months,Injured
+qn20,Fought at school 1 or more times in the past 12 months,Fought 
+qn21, Forced to have sex,ForcedSex
+qn24,Bullied 1 or more times in the past 12 months,Builled
+qn25,Electronically bullied 1 or more times in the past 12 months,Ebuilled
+qn27,Considered suicide in the past 12 months,ConsideredSuicide
+qn28,Made suicide plan in the past 12 months,MadeSuicidePlan
+qn29,Attempted suicide in the past 12 months,AttemptSuicide
+qn30,Suicide attempt with or without injury in the past 12 months,SuicideWithOrWithoutInjury
+qn33,Smoked 1 or more times in the past 30 days,SmokedMonth
+qn37,Smoked daily for 30 days,SmokedDaily
+qn43,Had drinks 1 or more times in the past 30 days,Drinks1+
+qn45,Had drinks 10 or more times in the past 30 days,Drinks10+
+qn47,Tried marijuana 1 or more times in life,Marijuana1+
+qn50,Used cocaine 1 or more times in life,Cocaine1+
+qn51,Sniffed glue 1 or more times in life,SniffedGlue1+
+qn52,Used heroin 1 or more times in life,Heroin1+
+qn53,Used meth 1 or more times in life,Meth1+
+qn54,Used ecstasy 1 or more times in life,Ecstasy1+
+qn55,Took steroids 1 or more times in life,Steroids1+
+qn56,Taken prescription drug without prescription 1 or more times in life,PrescriptionDrug
+qn57,Injected drugs 1 or more times in life,InjectedDrugs
