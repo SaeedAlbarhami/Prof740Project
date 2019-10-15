@@ -3,6 +3,13 @@ title: "Prof740"
 author: "Saeed"
 date: "March 22, 2019"
 output:
+  pdf_document:
+    toc: yes
+    toc_depth: '5'
+    df_print: paged
+  word_document:
+    toc: yes
+    toc_depth: '5'
   html_document:
     highlight: pygments
     number_sections: yes
@@ -10,13 +17,6 @@ output:
     toc: yes
     toc_depth: 3
     toc_float: yes
-    df_print: paged
-  word_document:
-    toc: yes
-    toc_depth: '5'
-  pdf_document:
-    toc: yes
-    toc_depth: '5'
     df_print: paged
 ---
 ```{r pressure, echo=FALSE,fig.cap="", out.width = '100%'}
@@ -119,6 +119,9 @@ str(data)
 displayTable<-head(data[2:15], n=2)  
 knitr::kable(displayTable)
 
+```
+```{r test}
+#github test
 ```
     
 
