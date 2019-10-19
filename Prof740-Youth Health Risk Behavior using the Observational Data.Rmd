@@ -3,6 +3,13 @@ title: "Prof740"
 author: "Saeed"
 date: "March 22, 2019"
 output:
+  pdf_document:
+    toc: yes
+    toc_depth: '5'
+    df_print: paged
+  word_document:
+    toc: yes
+    toc_depth: '5'
   html_document:
     highlight: pygments
     number_sections: yes
@@ -11,37 +18,98 @@ output:
     toc_depth: 3
     toc_float: yes
     df_print: paged
-  word_document:
-    toc: yes
-    toc_depth: '5'
-  pdf_document:
-    toc: yes
-    toc_depth: '5'
-    df_print: paged
 ---
 ```{r pressure, echo=FALSE,fig.cap="", out.width = '100%'}
 knitr::include_graphics("logo.png", auto_pdf = getOption("knitr.graphics.auto_pdf", FALSE), dpi = NULL)
 ```
 
-```{r , echo=FALSE, message=FALSE, warning=FALSE,  fig.width=10,fig.height=11}
-#install.packages("dplyr")
-#install.packages("arules")
-#install.packages("arulesViz")
-library(arulesViz)
-library(arules)
-library(data.table)
-library(ggplot2)
-library(ggrepel)
-library(plotly)
-library(dplyr)
-require(graphics)
-require(gridExtra)
-library(party)
-library(rpart)
-library(rpart.plot)
-library(viridisLite)
-library(knitr)
+```{r load libraries, echo=FALSE, message=FALSE, warning=FALSE,  fig.width=10,fig.height=11}
+# ======================= Install & Load The Required Libaries  ================================#
+if(!require('tidyverse'))
+{
+  #This package includes ggplot2,dplyr,tidyr,stringr,readr,purrr,tibble etc.
+  install.packages("tidyverse", dependencies = TRUE)
+  library(tidyverse)
+}
+if(!require('arules'))
+{
+  library(arules)
+}
+if(!require('arulesViz'))
+{
+  library(arulesViz)
+}
+if(!require('data.table'))
+{
+  library(data.table)
+}
+if(!require('ggrepel'))
+{
+  library(ggrepel)
+}
+if(!require(graphics))
+{
+  install.packages("graphics")
+  library(graphics)
+}
+if(!require('gridExtra'))
+{
+  install.packages("gridExtra")
+  library(gridExtra)
+}
+if(!require(party))
+{
+  install.packages("party")
+  library(party)
+}
+if(!require(rpart))
+{
+  install.packages("rpart")
+  library(rpart)
+}
+if(!require(rpart.plot))
+{
+  install.packages("rpart.plot")
+  library(rpart.plot)
+}
+if(!require(viridisLite))
+{
+  install.packages('virifdisLite')
+  library(viridisLite)
+}
+if(!require(knitr))
+{
+  install.packages("knitter")
+  library(knitter)
+}
 ```
+
+<!-- STEPS -->
+
+<!-- Submit a report:   -->
+<!-- 1- Brief introduction about the Use case -->
+<!--   - Background -->
+<!--   - Current challenges -->
+<!--   - Business propositions -->
+<!-- 2- Business Understanding -->
+<!-- 3- Data Understanding -->
+<!--   - Visualization the correlation between important variables.  -->
+<!-- 4- Data preparation -->
+<!--   - Feature engineering (Exploratory data analysis) -->
+<!-- 5- Modeling -->
+<!--   - Explain the selected algorithm -->
+<!--   - Why you choose the algorithms -->
+<!-- 6-Evaluation -->
+
+
+<!-- 1- Find a dataset on google (for example, Kaggle) which has at least 8 attributes. The dataset may related to Retail, Telecom, Transportation, Health, Logistics, Banking and Finance, etc.  -->
+
+<!-- 2- Apply the CRISP-DM methodology steps which includes business understanding, data understanding, data preparation, modeling and evaluation. Leave the last step that is deployment.  -->
+
+<!-- 3- You must need to write business benefits of each findings or Business propositions and suggest what actions business can take to improve the profits or productivity or service, etc. -->
+
+
+
 
 \newpage
 # Executive Summary
@@ -98,7 +166,7 @@ The responses of the survey questions are initially processed by the CDC to iden
 The dataset used in this project consists of Record ID that serves as a unique identifier, 4 demographic variables, 7 victimization variables, 4 suicide attempt variables and 13 substance use variables. The data is provided in csv format. 
 
 ## Metadata Description      
-```{r, echo=FALSE}
+```{r setup, echo=FALSE}
 variableDescription <- read.csv('DataDescription.csv', header=TRUE)
 head(variableDescription, n=nrow(variableDescription))
 
@@ -119,6 +187,9 @@ str(data)
 displayTable<-head(data[2:15], n=2)  
 knitr::kable(displayTable)
 
+```
+```{r test}
+#github test
 ```
     
 
@@ -713,7 +784,22 @@ table(testData[,4], pModel)
 ```
 
 
-#Conclusion 
+
+### Create additional model based o
+```{r }
+# #Create A Model
+# dtModel<-rpart(Grade~substanceUse+victimization+suicideAttempt,trainData,method = "class",
+#            control=rpart.control(minsplit=20, minbucket=1, cp = 0.001))
+# #View the tree
+# library(OneR)
+# oner_Model<-rpart(Grade~substanceUse+victimization+suicideAttempt,trainData,method = "class",
+#            control=rpart.control(minsplit=20, minbucket=1, cp = 0.001))
+# summary(oner_Model)
+# prediction_r <- predict(model, data)
+# eval_model(prediction_r, data)
+```
+
+# Conclusion 
 In this project, we studied the Youth Health Risk Behavior using the Observational Data to examine the relations between victimization, substance use and suicide attempt. We used the apriori algorithm to understand strong associations and built a decision tree to understand what influences suicide attempt.
 The results of this project tells us that adolescents who consider or attempt suicide tend to use substances. By assessing whether an adolescent was victimized and by looking at their sex, it is possible to predict if they are more likely to consider or attempt suicide.   This type of analysis is very important from a medical point of view. It provides a data supported backing of what doctors seem to already believe through experience. This also shows the importance of using machine learning techniques to answer key questions and find solutions in society.
 Overall, we were successful in identifying associations between victimization, substance use and suicide attempt. We can further improve this project by experimenting with other algorithms like logistic regression and random forest and by considering other types of groupings like race.
