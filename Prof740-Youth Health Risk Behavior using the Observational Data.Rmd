@@ -19,7 +19,7 @@ output:
     toc_float: yes
     df_print: paged
 ---
-```{r pressure, echo=FALSE,fig.cap="", out.width = '100%'}
+```{r setup, echo=FALSE,fig.cap="", out.width = '100%'}
 knitr::include_graphics("logo.png", auto_pdf = getOption("knitr.graphics.auto_pdf", FALSE), dpi = NULL)
 ```
 
@@ -82,9 +82,24 @@ if(!require(knitr))
   install.packages("knitter")
   library(knitter)
 }
+if(!require(corrplot))
+{
+  install.packages("corrplot")
+  library(corrplot)
+}
 ```
 
-<!-- STEPS -->
+
+<!-- 1- Find a dataset on google (for example, Kaggle) which has at least 8 attributes. The dataset may related to Retail, Telecom, Transportation, Health, Logistics, Banking and Finance, etc.  -->
+
+<!-- 2- Apply the CRISP-DM methodology steps which includes business understanding, data understanding, data preparation, modeling and evaluation. Leave the last step that is deployment.  -->
+
+<!-- 3- You must need to write business benefits of each findings or Business propositions and suggest what actions business can take to improve the profits or productivity or service, etc. -->
+
+
+
+
+                                                  <!-- STEPS -->
 
 <!-- Submit a report:   -->
 <!-- 1- Brief introduction about the Use case -->
@@ -99,14 +114,8 @@ if(!require(knitr))
 <!-- 5- Modeling -->
 <!--   - Explain the selected algorithm -->
 <!--   - Why you choose the algorithms -->
-<!-- 6-Evaluation -->
+<!-- 6- Evaluation -->
 
-
-<!-- 1- Find a dataset on google (for example, Kaggle) which has at least 8 attributes. The dataset may related to Retail, Telecom, Transportation, Health, Logistics, Banking and Finance, etc.  -->
-
-<!-- 2- Apply the CRISP-DM methodology steps which includes business understanding, data understanding, data preparation, modeling and evaluation. Leave the last step that is deployment.  -->
-
-<!-- 3- You must need to write business benefits of each findings or Business propositions and suggest what actions business can take to improve the profits or productivity or service, etc. -->
 
 
 
@@ -166,7 +175,7 @@ The responses of the survey questions are initially processed by the CDC to iden
 The dataset used in this project consists of Record ID that serves as a unique identifier, 4 demographic variables, 7 victimization variables, 4 suicide attempt variables and 13 substance use variables. The data is provided in csv format. 
 
 ## Metadata Description      
-```{r setup, echo=FALSE}
+```{r readdata, echo=FALSE}
 variableDescription <- read.csv('DataDescription.csv', header=TRUE)
 head(variableDescription, n=nrow(variableDescription))
 
@@ -179,7 +188,9 @@ head(variableDescription, n=nrow(variableDescription))
 data <- read.csv("CaseStudy10_YouthHealthRiskBehavior_Data.csv",header = TRUE)
 
 #Overview on data structure(Number of observations and cols, type of variables and their values.)
-str(data)
+# str(data)
+library(pander)
+pander(head(data), table.split.table = inf)
 ```
 
 ```{r  }
@@ -637,6 +648,24 @@ dataCleanedTransactions <- as(split(dataCleanedTransactions[,"qn"],
                                     dataCleanedTransactions[,"record"]), "transactions")
 summary(dataCleanedTransactions)
 
+```
+```{r fig.width=5,fig.height=6}
+
+# corr <- cor(dataCleaned, method = "spearman")
+
+# corplot <- colorRampPalette(c("#BB4444", "#EE9988", "#FFFFFF", "#77AADD", "#4477AA"))
+corrplot(cor(dataCleaned, method = "spearman")
+         , method="color", order="hclust", 
+         tl.col="black", tl.srt=90)
+
+# source of using spearman correlation
+# https://www.statisticssolutions.com/wp-content/uploads/wp-post-to-pdf-enhanced-cache/1/correlation-pearson-kendall-spearman.pdf
+
+
+# testing new package
+# library(esquisse)
+# esquisse::esquisser(dataCleaned)
+#  library(ggplot2)
 ```
 
 \newpage
