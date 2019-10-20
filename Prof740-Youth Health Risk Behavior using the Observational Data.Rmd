@@ -1,15 +1,15 @@
 ---
-title: "Prof740"
-author: "Saeed"
-date: "March 22, 2019"
+title: "YOUTH HEALTH RISK BEHAVIOR ANALYSIS"
+author: "GROUP 5"
+date: "`r format(Sys.time(), '%d %B %Y')`"
 output:
   pdf_document:
     toc: yes
-    toc_depth: '5'
+    toc_depth: '2'
     df_print: paged
   word_document:
     toc: yes
-    toc_depth: '5'
+    toc_depth: '2'
   html_document:
     highlight: pygments
     number_sections: yes
@@ -99,7 +99,7 @@ if(!require(corrplot))
 
 
 
-                                                  <!-- STEPS -->
+<!-- STEPS -->
 
 <!-- Submit a report:   -->
 <!-- 1- Brief introduction about the Use case -->
