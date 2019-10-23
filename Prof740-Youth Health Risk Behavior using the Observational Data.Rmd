@@ -1,11 +1,18 @@
 ---
-title: "YOUTH HEALTH RISK BEHAVIOR ANALYSIS"
-author: "GROUP 5"
+title: "A Case Study Of Analyzing 2013 Chicago Youth Health Risk Behavior Data By Machine Learning With CRISP-DM Methodology"
+subtitle: 
+- "Submitted as final project fulfillment of Course: ISTE790 Data Analytics for Emerging Technologies"
+author: 
+- "**Group: 5**"
+- (Saeed Albarhami, Abdullah Hussein)
 date: "`r format(Sys.time(), '%d %B %Y')`"
+abstract: 
+- "The objective of this paper is to use data mining techniques to analyze the 2013 Chicago youth risk behavior surveillance survey data,Collected by the centers for Disease Control and Prevention in USA, to investigate interesting relations and patterns in collected data, and provide a recommendation based on findings that been discovered by  applying machine learning algorithms such apriori decision tree...etc. following CRISP-DM steps methodology, staring by business understanding, data understanding, data preparation, modeling, and evaluation. R open-source software will be used among all the process steps."
 output:
   pdf_document:
     toc: yes
     toc_depth: '2'
+    number_sections: true
     df_print: paged
   word_document:
     toc: yes
@@ -19,8 +26,14 @@ output:
     toc_float: yes
     df_print: paged
 ---
+
+
+
+
+
 ```{r setup, echo=FALSE,fig.cap="", out.width = '100%'}
 knitr::include_graphics("logo.png", auto_pdf = getOption("knitr.graphics.auto_pdf", FALSE), dpi = NULL)
+knitr::opts_chunk$set(warning=FALSE, message=FALSE)
 ```
 
 ```{r load libraries, echo=FALSE, message=FALSE, warning=FALSE,  fig.width=10,fig.height=11}
@@ -87,6 +100,11 @@ if(!require(corrplot))
   install.packages("corrplot")
   library(corrplot)
 }
+if(!require(pander))
+{
+  install.packages("pander")
+  library(pander)
+}
 ```
 
 
@@ -101,10 +119,10 @@ if(!require(corrplot))
 
 <!-- STEPS -->
 
-<!-- Submit a report:   -->
-<!-- 1- Brief introduction about the Use case -->
-<!--   - Background -->
-<!--   - Current challenges -->
+ <!-- Submit a report:   done--> 
+ <!-- 1- Brief introduction about the Use case done-->
+ <!--   - Background done-->
+<!--   - Current challenges done-->
 <!--   - Business propositions -->
 <!-- 2- Business Understanding -->
 <!-- 3- Data Understanding -->
@@ -116,34 +134,33 @@ if(!require(corrplot))
 <!--   - Why you choose the algorithms -->
 <!-- 6- Evaluation -->
 
+# Introduction.
+
+Health behaviors and experiences related to sexual behavior, high-risk substance use, violence victimization, mental health and suicide contribute to substantial morbidity for adolescents, including risk for HIV, STDs, and teen pregnancy.The Centers for Disease Control and Prevention in the United States monitors rotinely youth health behaviours and experiances by conducting a yearly servuey across the country in clloaboration with schools to help in prevent futture prevention of spread of HIV, drug uses, sexually transmitted diseases, and unintend teen pregnancy in goal to raise awareness and understanding. Collected under the flag of YRBSS system which is developed in 1990 to monitor those risks.From 1991 untill 2013, A total 2.6 million high school student data was collected in more than 1,100 separate surveys. In this paper the anlysis will be performed on 2013 YRBSS Chicago dataset, downloaded from the Centers for Disease Control and Prevention, CRISP-DM methodolgy steps will be followed. R open-source software for report generating, analysis, and communcate findings.
 
 
+## Overview CRISP-DM:
+
+The CRISP-DM reference model for data mining provides an overview of the life cycle of a data mining project. It contains the phases of a project, their respective tasks, and their outputs.
 
 
-\newpage
-# Executive Summary
-* The main objective of this project is to examine the associations between victimization, substance use, and suicide attempt among youth using the Youth Health Risk Behavior Survey data for the year 2013.
-* The data used consists of information from 1581 respondents, consist of Record Id & 28 variables that are categorized into 4 categories:
+## Challenges.
 
-    1. Demographic
-    2. Victimization
-    3. Suicide Attempt
-    4. Substance Use   
+This case study examines the associations between victimization, substance use, and suicide attempt among youth in Chicago in 2013, Driving challenges are:
 
-* Each respondent is identified by a record ID and are mostly between the ages of 15-19 studying in grades 9-12. 
 
-* Most of the data consists of "Yes" / "No" answers to questions from the survey. 
-    * Among the victimization variables, most common "Yes" answer was to the question ‘Fought school 1+ times 12 months – around 15% of records
-    * Among the substance use variables, most common "Yes" answer was to the question ‘Tried marijuana 1+ times in life’ – around 50% of records
-    * Among the suicide attempts variables, most common "Yes" answer was to the question ‘Considered suicide 12 months – around 16% of records
-    * There are many NA/missing values in the dataset and after omitting these, we got 934 records that could be used for analysis. 
-    * In the data preparation stage, the following transformations and modifications are done. 
-    * Combining variables from each category into one variable each for victimization, substance use and suicide attempt
-    * Generating data in transaction format to do association analysis
-* In the first part of modeling, we used apriori algorithm to identify most common associations between victimization, suicide attempt and substance use. The major findings are:  
-    * There is association between suicide attempt and substance use at support of 17% and confidence of around 70%, but the association between suicide attempt and victimization is weaker at support of around 12% and confidence of around 49%. 
-    * The strongest association between individual variables is between qn27 (Considered suicide in last 12 months) and qn47 (Tried marijuana 1+ times in life) at support of around 11% and confidence of around 62%.
-* In the second part of modeling, we used decision tree machine learning techniques to automatically segment the class gradeand determine how well these derived groupings correspond to victimization and suicide attempt and predict ‘suicide attempt’ using the aggregated variables variables ‘victimization’ and ‘substance use’ for class ‘grade’. 
+- Are there relations between victimization (fighting, bullying, sexual abuse) and substanceuse (Tabaco, alcohol and other drug use)?
+
+
+- Are there relations between victimization (fighting, bullying, sexual abuse) and suicideattempt?
+
+
+- Are there relations between substance use (Tabaco, alcohol and other substance use) and suicide attempt?
+
+This case study is from the Youth Risk Behavior Survey (YRBS) data which arefree for use.
+(Seen from http://www.cdc.gov/healthyyouth/data/yrbs/data.htm).
+
+
 
 
 \newpage
@@ -158,13 +175,14 @@ The main objective of this project is to examine the associations between victim
 2. Are there relations between substance use (Tabaco, alcohol and other substance use) and suicide attempt?     
 3. Apply machine learning techniques to automatically segment the class grade into clusters and determine how well these derived groupings correspond to victimization and suicide attempt   
 
-##Motivation:
+## Motivation:
 Youth suicide is a substantial concern for health professionals, educators, lawmakers and society in general. Researchers have estimated that around 11% of all deaths among 12-19 year olds is due to suicide. It is assumed that there is high association between victimization, substance use and suicide attempt. Studying these associations will help in understanding youth behaviors and reducing adverse events. This type of analysis will also help doctors make decisions after taking into account the risk of suicide among their youth patients with history of victimization and/or substance use.    
 It is also critical to identify high risk groups who may be more associated with suicide attempt so that targeted preventive measures can be taken. For example, the CDC states that historical suicide rates for teens aged 15-19 years in the US differ significantly between genders.
   
 
-## Description:
-The Youth Health Risk Behavior Survey is a biannual study undertaken by US CDC that monitors several categories of health-related behaviors among youth. The survey includes adolescents from grades 9-12 in the age group of 14-19 years. In our analysis, we consider behaviors related to victimization (fighting, bullying, sexual abuse, etc.), substance use (tobacco, alcohol, marijuana, etc.) and suicide attempt (considered suicide, attempted suicide, etc.).    
+## Data Description:
+The Youth Health Risk Behavior Survey is a biannual study undertaken by UNITED STATE CDC that monitors several categories of health-related behaviors among youth. The survey includes adolescents from grades 9-12 in the age group of 14-19 years. In our analysis, we consider behaviors related to victimization (fighting, bullying, sexual abuse, etc.), substance use (tobacco, alcohol, marijuana, etc.) and suicide attempt (considered suicide, attempted suicide, etc.).    
+
 
 The responses of the survey questions are initially processed by the CDC to identify logical inconsistencies, convert responses to usable form, create derived variables from responses, etc. We use a subset of the full data and analyze only demographic, victimization, substance use and suicide attempt information.
 
@@ -172,13 +190,12 @@ The responses of the survey questions are initially processed by the CDC to iden
 \newpage
 # Data Understanding:  
 
-The dataset used in this project consists of Record ID that serves as a unique identifier, 4 demographic variables, 7 victimization variables, 4 suicide attempt variables and 13 substance use variables. The data is provided in csv format. 
+The dataset used in this project consists of Record ID that serves as a unique identifier, 4 demographic variables, 7 victimization variables, 4 suicide attempt variables and 13 substance use variables. The data is provided in csv format.
 
 ## Metadata Description      
 ```{r readdata, echo=FALSE}
 variableDescription <- read.csv('DataDescription.csv', header=TRUE)
 head(variableDescription, n=nrow(variableDescription))
-
 ```
       
       
@@ -186,18 +203,20 @@ head(variableDescription, n=nrow(variableDescription))
 **Load data**    
 ```{r  }
 data <- read.csv("CaseStudy10_YouthHealthRiskBehavior_Data.csv",header = TRUE)
-
 #Overview on data structure(Number of observations and cols, type of variables and their values.)
 # str(data)
 library(pander)
-pander(head(data), table.split.table = inf)
+panderOptions('table.split.table', 100) 
+pander(head(data))
+# #about fit
+panderOptions('table.split.table', 80) 
+pander(summary(data))
 ```
 
 ```{r  }
 #Data Overview With Selected Cols 
 displayTable<-head(data[2:15], n=2)  
 knitr::kable(displayTable)
-
 ```
 ```{r test}
 #github test
@@ -208,10 +227,10 @@ It is clear that, there are many NA values in the data. This will be addressed i
 
 ## Demographic Variables Description
 **Description of the factor levels of demographic variables **    
-* Age(1= <=12 years old, 2=13 years old, 3=14 years old, 4=15 years old, 5=16 years old,
+- Age(1= <=12 years old, 2=13 years old, 3=14 years old, 4=15 years old, 5=16 years old,
 6=17 years old, 7=18+ years old)     
-* Sex(1=Female, 2=Male)    
-* Race(1=White, 2=Black/African American, 3=Hispanic/Latino, 4=All other races)    
+- Sex(1=Female, 2=Male)    
+- Race(1=White, 2=Black/African American, 3=Hispanic/Latino, 4=All other races)    
 Grade (1=9th, 2=10th, 3=11th, 4=12th)      
 
 Data from the questions are all dichotomous with levels "1", "2" or NA for missing value.     
@@ -649,7 +668,7 @@ dataCleanedTransactions <- as(split(dataCleanedTransactions[,"qn"],
 summary(dataCleanedTransactions)
 
 ```
-```{r fig.width=5,fig.height=6}
+```{r }
 
 # corr <- cor(dataCleaned, method = "spearman")
 
@@ -660,12 +679,6 @@ corrplot(cor(dataCleaned, method = "spearman")
 
 # source of using spearman correlation
 # https://www.statisticssolutions.com/wp-content/uploads/wp-post-to-pdf-enhanced-cache/1/correlation-pearson-kendall-spearman.pdf
-
-
-# testing new package
-# library(esquisse)
-# esquisse::esquisser(dataCleaned)
-#  library(ggplot2)
 ```
 
 \newpage
