@@ -31,6 +31,7 @@ output:
 
 
 
+
 ```{r setup, echo=FALSE,fig.cap="", out.width = '100%'}
 knitr::include_graphics("logo.png", auto_pdf = getOption("knitr.graphics.auto_pdf", FALSE), dpi = NULL)
 knitr::opts_chunk$set(warning=FALSE, message=FALSE)
@@ -134,17 +135,26 @@ if(!require(pander))
 <!--   - Why you choose the algorithms -->
 <!-- 6- Evaluation -->
 
-# Introduction.
+# Introduction
 
-Health behaviors and experiences related to sexual behavior, high-risk substance use, violence victimization, mental health and suicide contribute to substantial morbidity for adolescents, including risk for HIV, STDs, and teen pregnancy.The Centers for Disease Control and Prevention in the United States monitors rotinely youth health behaviours and experiances by conducting a yearly servuey across the country in clloaboration with schools to help in prevent futture prevention of spread of HIV, drug uses, sexually transmitted diseases, and unintend teen pregnancy in goal to raise awareness and understanding. Collected under the flag of YRBSS system which is developed in 1990 to monitor those risks.From 1991 untill 2013, A total 2.6 million high school student data was collected in more than 1,100 separate surveys. In this paper the anlysis will be performed on 2013 YRBSS Chicago dataset, downloaded from the Centers for Disease Control and Prevention, CRISP-DM methodolgy steps will be followed. R open-source software for report generating, analysis, and communcate findings.
-
-
-## Overview CRISP-DM:
-
-The CRISP-DM reference model for data mining provides an overview of the life cycle of a data mining project. It contains the phases of a project, their respective tasks, and their outputs.
+Health behaviors and experiences related to sexual behavior, high-risk substance use, violence victimization, mental health and suicide contribute to substantial morbidity for adolescents, including risk for HIV, STDs, and teen pregnancy.The Centers for Disease Control and Prevention in the United States monitors rotinely youth health behaviours and experiances by conducting a yearly servuey across the country in clloaboration with schools to help in prevent futture prevention of spread of HIV, drug uses, sexually transmitted diseases, and unintend teen pregnancy in goal to raise awareness and understanding. Collected under the flag of YRBSS system which is developed in 1990 to monitor those risks.From 1991 untill 2013, A total 2.6 million high school student data was collected in more than 1,100 separate surveys. In this paper the anlysis will be performed on 2013 YRBSS Chicago dataset, downloaded from the Centers for Disease Control and Prevention, CRISP-DM methodolgy steps will be followed. R open-source software for report generating, analysis, and to communcate findings.
 
 
-## Challenges.
+## Overview of CRISP-DM:
+
+
+- CRISP-DM was conceived in 1996 and immature data mining market as a standrized process for data mining projects, The methodolgy provides an overview of the life cycle of a data mining project, In six major steps; Bussniess understanding, Data understanding, Data preparation, Modeling, And Evaluation.
+
+
+Note: 
+
+
+- **As per the course requirment deployment step is not included in  **
+
+According to latest poll by https://www.kdnuggets.com/ about which 
+
+
+## Current Challenges.
 
 This case study examines the associations between victimization, substance use, and suicide attempt among youth in Chicago in 2013, Driving challenges are:
 
@@ -164,7 +174,7 @@ This case study is from the Youth Risk Behavior Survey (YRBS) data which arefree
 
 
 \newpage
-# Business Understanding:
+# BUSINESS UNDERSTANDING:
 
 ## Objective:
 The main objective of this project is to examine the associations between victimization, substance use, and suicide attempt among youth using the Youth Health Risk Behavior Survey data for the year 2013. We will be using Apriori(an algorithm for frequent item set mining and association rule learning) and Decision Tree.    
@@ -188,14 +198,14 @@ The responses of the survey questions are initially processed by the CDC to iden
 
 
 \newpage
-# Data Understanding:  
+# DATA UNDERSTANDING.  
 
 The dataset used in this project consists of Record ID that serves as a unique identifier, 4 demographic variables, 7 victimization variables, 4 suicide attempt variables and 13 substance use variables. The data is provided in csv format.
 
 ## Metadata Description      
-```{r readdata, echo=FALSE}
+```{r readdata}
 variableDescription <- read.csv('DataDescription.csv', header=TRUE)
-head(variableDescription, n=nrow(variableDescription))
+pander(head(variableDescription, n=nrow(variableDescription)))
 ```
       
       
@@ -218,24 +228,33 @@ pander(summary(data))
 displayTable<-head(data[2:15], n=2)  
 knitr::kable(displayTable)
 ```
-```{r test}
-#github test
-```
-    
+
+
 
 It is clear that, there are many NA values in the data. This will be addressed in the next section.    
 
 ## Demographic Variables Description
-**Description of the factor levels of demographic variables **    
-- Age(1= <=12 years old, 2=13 years old, 3=14 years old, 4=15 years old, 5=16 years old,
-6=17 years old, 7=18+ years old)     
-- Sex(1=Female, 2=Male)    
-- Race(1=White, 2=Black/African American, 3=Hispanic/Latino, 4=All other races)    
-Grade (1=9th, 2=10th, 3=11th, 4=12th)      
 
-Data from the questions are all dichotomous with levels "1", "2" or NA for missing value.     
+**Description of the factor levels of demographic variables **
 
-**Considering "1" corresponds to  "Yes" and "2" corresponds to a "No".**
+
+- Age: (1= <=12 years old, 2=13 years old, 3=14 years old, 4=15 years old, 5=16 years old, 6=17 years old, 7=18+ years old).
+
+
+- Sex: (1=Female, 2=Male).
+
+
+- Race: (1=White, 2=Black/African American, 3=Hispanic/Latino, 4=All other races)    
+Grade (1=9th, 2=10th, 3=11th, 4=12th).
+
+
+
+Data from the questions are all dichotomous (ordinal) as numerical values  with levels "1", "2"...etc or NA for missing value.     
+
+Note: 
+
+
+- **Considering "1" corresponds to  "Yes" and "2" corresponds to a "No".**
 
 
 
@@ -668,14 +687,15 @@ dataCleanedTransactions <- as(split(dataCleanedTransactions[,"qn"],
 summary(dataCleanedTransactions)
 
 ```
-```{r }
+
+```{r fig.width=10,fig.height=11}
 
 # corr <- cor(dataCleaned, method = "spearman")
 
-# corplot <- colorRampPalette(c("#BB4444", "#EE9988", "#FFFFFF", "#77AADD", "#4477AA"))
+#corplot <- colorRampPalette(c("#BB4444", "#EE9988", "#FFFFFF", "#77AADD", "#4477AA"))
 corrplot(cor(dataCleaned, method = "spearman")
          , method="color", order="hclust", 
-         tl.col="black", tl.srt=90)
+         tl.col="black", tl.srt=90,sig.level = 0.01, insig = "blank")
 
 # source of using spearman correlation
 # https://www.statisticssolutions.com/wp-content/uploads/wp-post-to-pdf-enhanced-cache/1/correlation-pearson-kendall-spearman.pdf
@@ -740,7 +760,8 @@ inspect(eclatRules)
 #Graph of association rules for all items for minimum support of 0.1 
 #and minimum confidence of 0.2
 set.seed(1234)
-plot(aprioriRules, method='graph', shading='confidence', control=list(main="Graph of rules"))
+plot(aprioriRules, method='graph', shading='confidence',
+     control=list(main="Graph of rules"))
 ```
 
 
@@ -749,7 +770,8 @@ plot(aprioriRules, method='graph', shading='confidence', control=list(main="Grap
 #Graph of association rules Aggregating(Victimization,Substance & Suicide) 
 #for minimum support of 0.1 and minimum confidence of 0.2    
 set.seed(1234)
-plot(aprioriRules, method='graph', shading='confidence', control=list(main="Graph of Rules"))
+plot(aprioriRules, method='graph', shading='confidence',
+     control=list(main="Graph of Rules"))
 
 # The association between suicide attempt and substance use is stronger
 #than the association between suicide attempt and victimization
@@ -780,6 +802,8 @@ displayTable<-head(dtData[,c("Grade","substanceUse", "victimization", "suicideAt
 knitr::kable(displayTable)
 
 ```
+
+
 ### Create Train and Test Samples
 ```{r }
 # Create train and test datasets
