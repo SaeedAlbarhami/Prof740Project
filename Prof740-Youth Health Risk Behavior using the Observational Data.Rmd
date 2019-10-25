@@ -103,7 +103,7 @@ if(!require(pander))
 
 
 
-```{r setup, echo=FALSE,fig.cap="", out.width = '100%'}
+```{r setup, echo=FALSE,fig.cap="test", out.width = '100%'}
 knitr::include_graphics("logo.png", auto_pdf = getOption("knitr.graphics.auto_pdf", FALSE), dpi = NULL)
 knitr::opts_chunk$set(warning=FALSE, message=FALSE)
 ```
@@ -923,9 +923,12 @@ Overall, we were successful in identifying associations between victimization, s
 
 
 
-## Appendices
-**Load Required Libraries**
-```{r , message=FALSE, warning=FALSE,  fig.width=10,fig.height=11}
+# Appendices
+
+
+## Load Required Libraries
+
+```{r}
 #install.packages("dplyr")
 #install.packages("dplyr")
 #install.packages("arules")
@@ -949,11 +952,18 @@ Overall, we were successful in identifying associations between victimization, s
 #library(rpart.plot)
 #library(viridisLite)
 
+```
+
+### Session Information.
+
+Listing Machine been used for the project, operating system, R version, And used libraries with their versions for future repreducbility of the project.
+
+
+
+```{r sessioninfo}
 #leaded machine and R session informatiion
-
-utils:::print.sessionInfo(sessionInfo()[-7]) # thanks @r2evans
-# sink()
-# sessionInfo()
-# sink()
-
+#session_info
+# utils:::print.sessionInfo(sessionInfo()[-7]) # thanks @r2evans
+#session_info_compact
+pander(sessionInfo(), compact = TRUE)
 ```
