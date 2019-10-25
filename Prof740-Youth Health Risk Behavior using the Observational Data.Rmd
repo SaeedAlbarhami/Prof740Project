@@ -97,9 +97,12 @@ if(!require(pander))
   install.packages("pander")
   library(pander)
 }
+if(!require(DataExplorer))
+{
+  install.packages("DataExplorer")
+  library(DataExplorer)
+}
 ```
-
-
 
 
 
@@ -182,12 +185,12 @@ CRISP-DM was conceived in 1996 and immature data mining market as a standrized p
 
 
 
-##  Challenges.
+## Business Challenges.
 
 This case study examines the associations between victimization, substance use, and suicide attempt among youth in Chicago at 2013,  challenges are:
 
 
-- Are there relations between victimization (fighting, bullying, sexual abuse) and substanceuse (Tabaco, alcohol and other drug use)?
+- Are there  relations between victimization (fighting, bullying, sexual abuse) and substanceuse (Tabaco, alcohol and other drug use)?
 
 
 - Are there relations between victimization (fighting, bullying, sexual abuse) and suicide attempts?
@@ -240,47 +243,57 @@ pander(head(variableDescription, n=nrow(variableDescription)))
 ```
       
       
-## Loading, Retrieving, Viewing & Inspecting Data.
+## Loading, Retrieving, Viewing Data.
 
-### Loading, Retrieving, Viewing.
+Loading the data from the main source and veiw the 5 occurances from each variable.
 
-Loading the data from the main source and veiw the 5 occurances from each variables.
-
-```{r  }
+```{r describedata}
 data <- read.csv("CaseStudy10_YouthHealthRiskBehavior_Data.csv",header = TRUE)
+panderOptions('table.split.table', 100)
+pander(head(data),caption = "First 5 rows of dataset")
+```
+
+## Exploratory data analysis.
+
+This section introduce an an exploration to dataset by insvistigating all the variables, and observations, missing and completed rows.
+
+```{r exploredata}
 # Overview on data structure (Number of observations and cols, type of variables and their values.)
 # str(data)
-panderOptions('table.split.table', 100)
-pander(head(data))
-# #about fit
-# panderOptions('table.split.table', 80) 
-# pander(summary(data))
+pander(introduce(data), caption = "Describe basic informations of dataset")
 ```
 
 
-```{r }
-# pander(introduce(data))
-# DataExplorer::plot_density(data[,c("sex","grade","age","race4")], ncol = 2L)
-# skim(data)
+```{r skimr}
+# library(skimr)
+# skim_tee(data)
+# skim_to_wide(data)
+# skim_to_list(data)
+# skim(data) %>% kable()
+# skim_with(numeric = list(hist = NULL)) #This is in the "Using Skimr" vignette.
+# knitr::kable(skim(data))
 ```
 
-
-
-```{r  }
+```{r  samplewithNAs}
 #Data Overview With Selected Cols 
 displayTable <-head(data[2:15], n=2)
 
-knitr::kable(displayTable)
+pander(displayTable, caption = "Sample of observations with Empty values")
 
 ```
 
+- Summary:
+
+It is clear that, there are many NA values in the data. that will addresed and preprocessed in the following steps.   
 
 
-It is clear that, there are many NA values in the data. This will be addressed in the next section.    
+
 
 ## Demographic Variables Description
 
-**Description of the factor levels of demographic variables **
+**Description of the factor levels of demographic variables: **
+
+In dataset there are 4 demographic variables, grouped as a levels as the below:
 
 
 - Age: (1= <=12 years old, 2=13 years old, 3=14 years old, 4=15 years old, 5=16 years old, 6=17 years old, 7=18+ years old).
@@ -295,7 +308,6 @@ It is clear that, there are many NA values in the data. This will be addressed i
 - Grade (1=9th, 2=10th, 3=11th, 4=12th).
 
 
-
 Data from the questions are all dichotomous (ordinal) as numerical values  with levels "1", "2"...etc or NA for missing value.     
 
 
@@ -303,6 +315,10 @@ Data from the questions are all dichotomous (ordinal) as numerical values  with 
 
 
 - Considering "1" corresponds to  "Yes" and "2" corresponds to a "No".
+
+
+
+
 
 
 
@@ -338,16 +354,21 @@ str(dataOverview)
 
 ```
 \newpage 
-```{r,  fig.width=10,fig.height=11}
+
+
+```{r}
 #Data Summary
 summary(dataOverview)
 ```
+
+
 ```{r,  fig.width=10,fig.height=11}
 #Overview On Our Current Dataframe With Demographic Variables Only(As Is)
 
 displayTable<-head(dataOverview[1:4], n=5)  
 knitr::kable(displayTable)
 ```
+
 ```{r,fig.width=10,fig.height=11}
 
 #We notice many missing values; therefore, we are going to use the predefined cutom 
@@ -415,6 +436,13 @@ plot(density(unclass(cleanedData$sex)), xlab = "Sex",main = "")
 plot(density(unclass(cleanedData$grade)), xlab = "Grade",main = "")
 
 ``` 
+
+```{r fig.cap= "Density plot"}
+DataExplorer::plot_density(data[,c("sex","grade","age","race4")], ncol = 2L)
+# skim(data)
+```
+
+
 
 ## Demographic Details(Age,Race,Sex & Grade) of Respondents    
 
