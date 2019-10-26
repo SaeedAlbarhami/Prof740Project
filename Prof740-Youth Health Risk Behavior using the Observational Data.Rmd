@@ -28,6 +28,7 @@ output:
     df_print: paged
 ---
 
+
 ```{r load libraries, echo=FALSE, fig.height=11, fig.width=10, message=FALSE, warning=FALSE}
 # ======================= Install & Load The Required Libaries  ================================#
 if(!require('tidyverse'))
@@ -106,6 +107,7 @@ if(!require(DataExplorer))
 
 
 
+
 ```{r setup, echo=FALSE,fig.cap="test", out.width = '100%'}
 knitr::include_graphics("logo.png", auto_pdf = getOption("knitr.graphics.auto_pdf", FALSE), dpi = NULL)
 knitr::opts_chunk$set(warning=FALSE, message=FALSE)
@@ -175,6 +177,13 @@ Health behaviors and experiences related to sexual behavior, high-risk substance
 
 CRISP-DM was conceived in 1996 and immature data mining market as a standrized process for data mining projects, The methodolgy provides an overview of the life cycle of a data mining project, In six major steps; Bussniess understanding, Data understanding, Data preparation, Modeling, And Evaluation. According to latest poll (2014) results by https://www.kdnuggets.com/, crisp-dm methodology is still the most popular data mining with 43%, placed by SEMMA by SAS institute, and followed by KDD process.
 
+Why is data mining important?
+
+Data mining is an innovative and potentially powerful business strategy. A great deal of work involves the analysis of large amounts of information in an attempt to discover underlying patterns in a large amount of data. The process is called data mining because data mining is a process that "mining" data to search for patterns. Such techniques can not only find hidden patterns but identify patterns that would be hard to find through traditional data mining methods
+
+
+
+
 <!-- Refrence: https://www.kdnuggets.com/2014/10/crisp-dm-top-methodology-analytics-data-mining-data-science-projects.html -->
 
 
@@ -206,7 +215,7 @@ This case study examines the associations between victimization, substance use, 
 # Business Understanding:
 
 ## Objective:
-The main objective of this project is to examine the associations between victimization, substance use, and suicide attempt among youth using the Youth Health Risk Behavior Survey data for the year 2013. We will be using Apriori (an algorithm for frequent item set mining and association rule learning) and Decision Tree.    
+The main objective of this project is to examine the associations between victimization, substance use, and suicide attempt among youth using the Youth Health Risk Behavior Survey data for the year 2013. We will be using Apriori (an algorithm for frequent item set mining and association rule learning) and Decision Tree. This study has several  addressing association of youth mental health with substance use, suicide attempt, and victimization. Data sample includes only youth, and thus focuses on health related outcomes not limited to substance use, suicide, or victimization. Most importantly, by using a representative sample of youth who were not age-cohorted, The data set will allow for identification of a number of potentially valuable insights.
 
 **Using the above mentioned algorithms we are going to answer the following questions:**    
 
@@ -264,28 +273,21 @@ pander(introduce(data), caption = "Describe basic informations of dataset")
 ```
 
 
-```{r skimr}
+```{r skimr, results='asis'}
 # library(skimr)
-# skim_tee(data)
-# skim_to_wide(data)
-# skim_to_list(data)
-# skim(data) %>% kable()
-# skim_with(numeric = list(hist = NULL)) #This is in the "Using Skimr" vignette.
-# knitr::kable(skim(data))
+# library(kableExtra)
+# skim(data) %>% skimr::kable(format = "latex", booktabs = T, caption = "Sample of observations with Empty values")
 ```
 
 ```{r  samplewithNAs}
 #Data Overview With Selected Cols 
 displayTable <-head(data[2:15], n=2)
-
 pander(displayTable, caption = "Sample of observations with Empty values")
-
 ```
 
 - Summary:
 
-It is clear that, there are many NA values in the data. that will addresed and preprocessed in the following steps.   
-
+It is clear that, there are many NA values in the data. that will addresed and preprocessed in the following steps.  
 
 
 
@@ -318,13 +320,19 @@ Data from the questions are all dichotomous (ordinal) as numerical values  with 
 
 
 
+# Data Preprocessing (Demographics)
 
+This section will implement data cleaning process for all non needed varibles. 
 
+## Creating A Custom R Function To Handle Missing Data For Specific/All Observations
 
+**This function takes the dataset and the cols to omit the na values**
 
-## Data Distribution Overview   
+Note:
 
-```{r, echo=TRUE, message=FALSE, warning=FALSE, fig.width=10,fig.height=11}
+- This function will used to clean data in two phases, phase (1) will handle the demographic variables, and phase (2) handles the other victimization variables, suicide attempt variables and 13 substance use variables.
+
+```{r omitna function, echo=TRUE, message=FALSE, warning=FALSE}
 #This function takes the dataset and the cols to omit the na values
 omitNaForSpecificCols <- function(d, desiredCols) {
     completeVec <- complete.cases(d[, desiredCols])
@@ -332,110 +340,140 @@ omitNaForSpecificCols <- function(d, desiredCols) {
 }
 ```
 
-```{r,  fig.width=10 ,fig.height=11}
+## Data Distribution Overview (Demographics).
+
+
+Here and overview of the dataset cleaned data from any Na observation
+
+- Summary: 
+
+New dataset has a 1514 obs. out of 5 demographic variables (age,sex,grade,race), and non empty observations, and levels have been changed into categorical (texts) for analysis in the next steps. 
+
+
+```{r str}
 #Takes cols related to Demographic variables 
 #This will take the range of cols from 2 to 5 i.e(2(age),3(sex),4(grade),5(race))
 dataOverview<-data[, 2:5] 
 dataOverview$sex <- factor(dataOverview$sex, labels = c('Female','Male'), ordered = TRUE)
 dataOverview$age <- factor(dataOverview$age, labels = c('<=12','13','14','15','16','17',
-                                                        '18+'), 
-                           ordered = TRUE)
-dataOverview$race <- factor(dataOverview$race4, labels = 
-                                c('White','Black/African American','Hispanic/Latino',
-                                  'All other races'), ordered = TRUE)
+                                                        '18+'),ordered = TRUE)
+dataOverview$race <- factor(dataOverview$race4, labels = c('White','Black/African American',
+                                                           'Hispanic/Latino','All other races')
+                            , ordered = TRUE)
 dataOverview$grade <- factor(dataOverview$grade, labels = c('9th','10th','11th','12th'), 
                              ordered = TRUE)
-
 #Cleaning the data using omitNaForSpecificCols() created above.
 dataOverview<- omitNaForSpecificCols(dataOverview,c("sex","age","race","grade"))
-
 #Structure For Manipulated Data  
 str(dataOverview) 
-
 ```
-\newpage 
+
+## Data Distribution Overview (Demographics).
+ 
+Summary of all Demographic variables that shows the level of each variable in dataset
+
+- Note:
 
 
-```{r}
+*NA* in this output shows only an empty level eg: "sex variable according to dataset description has only two levels"
+
+```{r datasummary}
 #Data Summary
-summary(dataOverview)
+pander(summary(dataOverview), caption = "Data summary table")
 ```
 
+# Data Overview (Demographics).
 
-```{r,  fig.width=10,fig.height=11}
+Here shows a sample of dataset after cleaning, and transforming the variables.
+
+```{r dataOverview,  fig.width=10,fig.height=11}
 #Overview On Our Current Dataframe With Demographic Variables Only(As Is)
-
 displayTable<-head(dataOverview[1:4], n=5)  
-knitr::kable(displayTable)
-```
-
-```{r,fig.width=10,fig.height=11}
-
-#We notice many missing values; therefore, we are going to use the predefined cutom 
-#function "omitNaForSpecificCols"created above to omit the values whenever need for a 
-#specific/all cols needed for analysis
+knitr::kable(displayTable, caption = "New demographic variables")
 
 ```
 
-```{r, fig.width=10,fig.height=11 }
+# Statistical Summary Of Grouped Data (Demographics).
+
+Here shows a statistical summary of all grouped demographic variables, this give a meaning how well are our data variables are distributed, and if data set is biased towared a certain varible. A biased dataset in many cases can effect all the anlaysis results and give a non relastic insights.
+
+- Summary:
+
+Sex groups variables are normaly distributed.
+
+Race groups variables are normaly distributed.
+
+Age groups variables are normaly distributed.
+
+Grade groups are skwedtowards 12th, and 11th observations.
+
+
+
+```{r tablegroups, echo= FALSE, fig.width=10,fig.height=11}
 #Grouping The Respondents By Sex
 cleanedData<-omitNaForSpecificCols(dataOverview, c("sex"))
 cleanedData<- cleanedData %>% group_by(sex) %>% summarize(count=n()) %>% 
     arrange(desc(sex),.by_group = TRUE)
-knitr::kable(cleanedData)
-```
-```{r, fig.width=10,fig.height=11 }
+knitr::kable(cleanedData, caption = "Sex Groups statistics")
 #Grouping The Respondents By Race
 cleanedData<-omitNaForSpecificCols(dataOverview, c("race"))
 cleanedData<- cleanedData %>% group_by(race) %>% summarize(count=n()) %>% 
     arrange(desc(race),.by_group = TRUE)
-
-knitr::kable(cleanedData)
-
- 
-```
-
-```{r, fig.width=10,fig.height=11 }
-#Grouping The Respondents By Sex & Race
-cleanedData<-omitNaForSpecificCols(dataOverview, c("sex","race"))
-cleanedData<-cleanedData %>% group_by(race, sex) %>% summarize(count=n()) %>% 
-    arrange(desc(race),.by_group = TRUE)
-
-knitr::kable(cleanedData)
-
-```
-
-```{r, fig.width=10,fig.height=11 }
+knitr::kable(cleanedData, caption = "Race groups statistics")
 #Grouping The Respondents By Age
 cleanedData<-omitNaForSpecificCols(dataOverview, c("age"))
 cleanedData<- cleanedData %>% group_by(age) %>% summarize(count=n()) %>% 
     arrange(desc(age),.by_group = TRUE)
-knitr::kable(cleanedData)
- 
-```
-
-```{r, fig.width=10,fig.height=11 }
-#Grouping The Respondents By Age
+knitr::kable(cleanedData, caption = "Age groups statistics")
+#Grouping The Respondents By grade
 cleanedData<-omitNaForSpecificCols(dataOverview, c("grade"))
 cleanedData<- cleanedData %>% group_by(grade) %>% summarize(count=n()) %>% 
     arrange(desc(grade),.by_group = TRUE)
-knitr::kable(cleanedData)
- 
+knitr::kable(cleanedData, caption = "Grade groups statistics")
+#Grouping The Respondents By Sex & Race
+cleanedData<-omitNaForSpecificCols(dataOverview, c("sex","race"))
+cleanedData<-cleanedData %>% group_by(race, sex) %>% summarize(count=n()) %>% 
+    arrange(desc(race),.by_group = TRUE)
+knitr::kable(cleanedData, caption = "Race/Sex groups statistics")
 ```
 
 
-## Density Distribution For Age,Race,Sex & Grade of Respondents    
 
-```{r,  fig.width=10,fig.height=11}
+
+
+
+## Density Distribution (Demographics).
+
+```{r,  fig.width=10,fig.height=11 ,fig.cap= "Density plot"}
 
 cleanedData<-omitNaForSpecificCols(dataOverview, c("sex","race","grade","age"))
 par(mfrow=c(2,2))
-plot(density(unclass(cleanedData$age)), xlab = "Age",main = "")
+plot(density(unclass(cleanedData$age)), xlab = "Age",main = "ssksss")
 plot(density(unclass(cleanedData$race)), xlab = "Race",main = "")
 plot(density(unclass(cleanedData$sex)), xlab = "Sex",main = "")
 plot(density(unclass(cleanedData$grade)), xlab = "Grade",main = "")
 
+
 ``` 
+
+
+```{r testchunk}
+
+# 
+# DataExplorer::plot_str(cleanedData)
+# 
+# DataExplorer::plot_missing(cleanedData)
+# 
+# DataExplorer::plot_density(cleanedData)
+# 
+# DataExplorer::plot_bar(cleanedData)
+
+library(SmartEDA)
+pander(ExpCTable(cleanedData))
+pander(ExpData(data, type = 2))
+
+
+```
 
 ```{r fig.cap= "Density plot"}
 DataExplorer::plot_density(data[,c("sex","grade","age","race4")], ncol = 2L)
@@ -514,6 +552,7 @@ grid.arrange(plot1,plot2,plot3,plot4,plot5,plot6, ncol=2)
 ```
 
 ## Victimization Proportion For The Given Data 
+
 ```{r }
 
 cleanedData<-omitNaForSpecificCols(data, c("qn16","qn17","qn19","qn20","qn21","qn24","qn25"))
@@ -991,7 +1030,7 @@ Listing Machine been used for the project, operating system, R version, And used
 ```{r sessioninfo}
 #leaded machine and R session informatiion
 #session_info
-# utils:::print.sessionInfo(sessionInfo()[-7]) # thanks @r2evans
+#utils:::print.sessionInfo(sessionInfo()[-7]) # thanks @r2evans
 #session_info_compact
 pander(sessionInfo(), compact = TRUE)
 ```
