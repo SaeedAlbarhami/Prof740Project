@@ -179,7 +179,7 @@ CRISP-DM was conceived in 1996 and immature data mining market as a standrized p
 
 Why is data mining important?
 
-Data mining is an innovative and potentially powerful business strategy. A great deal of work involves the analysis of large amounts of information in an attempt to discover underlying patterns in a large amount of data. The process is called data mining because data mining is a process that "mining" data to search for patterns. Such techniques can not only find hidden patterns but identify patterns that would be hard to find through traditional data mining methods
+Data mining is an innovative and potentially powerful business strategy. A great deal of work involves the analysis of large amounts of information in an attempt to discover underlying patterns in a large amount of data. The process is called data mining because data mining is a process that "mining" data to search for patterns. Such techniques can not only find hidden patterns but identify patterns that would be hard to find through traditional data mining methods.
 
 
 
@@ -262,22 +262,33 @@ panderOptions('table.split.table', 100)
 pander(head(data),caption = "First 5 rows of dataset")
 ```
 
-## Exploratory data analysis.
+## Exploratory Data Analysis.
 
 This section introduce an an exploration to dataset by insvistigating all the variables, and observations, missing and completed rows.
 
 ```{r exploredata}
 # Overview on data structure (Number of observations and cols, type of variables and their values.)
 # str(data)
+displayTable <-head(data[2:15], n=2)
+pander(displayTable, caption = "Sample of observations with Empty values")
 pander(introduce(data), caption = "Describe basic informations of dataset")
+DataExplorer::plot_intro(data, title = "Plot of dataset information")
+DataExplorer::plot_missing(data, title = "Plot of dataset missing values")
 ```
 
 
-```{r skimr, results='asis'}
-# library(skimr)
-# library(kableExtra)
-# skim(data) %>% skimr::kable(format = "latex", booktabs = T, caption = "Sample of observations with Empty values")
+```{r skimr}
+#library(skimr)
+#library(kableExtra)
+#skim(data) %>% skimr::kable( booktabs = T, caption = "Sample of observations with Empty values")
+# 
+# library(pander)
+# panderOptions('knitr.auto.asis', FALSE)
+# skim(data) %>% pander()
+
 ```
+
+
 
 ```{r  samplewithNAs}
 #Data Overview With Selected Cols 
@@ -320,11 +331,14 @@ Data from the questions are all dichotomous (ordinal) as numerical values  with 
 
 
 
+
 # Data Preprocessing (Demographics)
 
 This section will implement data cleaning process for all non needed varibles. 
 
-## Creating A Custom R Function To Handle Missing Data For Specific/All Observations
+## Creating A Custom R Function To Handle Missing Data For Specific/All Observations.
+
+### Apply On Demographics Variables Only.
 
 **This function takes the dataset and the cols to omit the na values**
 
@@ -343,14 +357,20 @@ omitNaForSpecificCols <- function(d, desiredCols) {
 ## Data Distribution Overview (Demographics).
 
 
-Here and overview of the dataset cleaned data from any Na observation
+Here and overview of cleaned data from any Na observation, and statistical summary of the new observations.
 
 - Summary: 
 
 New dataset has a 1514 obs. out of 5 demographic variables (age,sex,grade,race), and non empty observations, and levels have been changed into categorical (texts) for analysis in the next steps. 
 
+- Note:
 
-```{r str}
+
+*NA* in this output shows only an empty level eg: "sex variable according to dataset description has only two levels"
+
+
+
+```{r cleanandsummary}
 #Takes cols related to Demographic variables 
 #This will take the range of cols from 2 to 5 i.e(2(age),3(sex),4(grade),5(race))
 dataOverview<-data[, 2:5] 
@@ -365,35 +385,30 @@ dataOverview$grade <- factor(dataOverview$grade, labels = c('9th','10th','11th',
 #Cleaning the data using omitNaForSpecificCols() created above.
 dataOverview<- omitNaForSpecificCols(dataOverview,c("sex","age","race","grade"))
 #Structure For Manipulated Data  
-str(dataOverview) 
-```
+dataOverview <- drop_columns(dataOverview, c("race4"))
 
-## Data Distribution Overview (Demographics).
- 
-Summary of all Demographic variables that shows the level of each variable in dataset
-
-- Note:
-
-
-*NA* in this output shows only an empty level eg: "sex variable according to dataset description has only two levels"
-
-```{r datasummary}
+#str(dataOverview)
+library(SmartEDA)
+#pander(ExpData(dataOverview,type=1))
 #Data Summary
-pander(summary(dataOverview), caption = "Data summary table")
+pander(summary(dataOverview), caption = "Demographics data summary")
+pander(introduce(dataOverview),caption = "Demographics data structure")
 ```
 
-# Data Overview (Demographics).
+
+
+## Data Overview (Demographics).
 
 Here shows a sample of dataset after cleaning, and transforming the variables.
 
-```{r dataOverview,  fig.width=10,fig.height=11}
+```{r dataoverview}
 #Overview On Our Current Dataframe With Demographic Variables Only(As Is)
 displayTable<-head(dataOverview[1:4], n=5)  
 knitr::kable(displayTable, caption = "New demographic variables")
 
 ```
 
-# Statistical Summary Of Grouped Data (Demographics).
+## Statistical Summary Of Grouped Data (Demographics).
 
 Here shows a statistical summary of all grouped demographic variables, this give a meaning how well are our data variables are distributed, and if data set is biased towared a certain varible. A biased dataset in many cases can effect all the anlaysis results and give a non relastic insights.
 
@@ -409,82 +424,59 @@ Grade groups are skwedtowards 12th, and 11th observations.
 
 
 
-```{r tablegroups, echo= FALSE, fig.width=10,fig.height=11}
-#Grouping The Respondents By Sex
-cleanedData<-omitNaForSpecificCols(dataOverview, c("sex"))
-cleanedData<- cleanedData %>% group_by(sex) %>% summarize(count=n()) %>% 
-    arrange(desc(sex),.by_group = TRUE)
-knitr::kable(cleanedData, caption = "Sex Groups statistics")
-#Grouping The Respondents By Race
-cleanedData<-omitNaForSpecificCols(dataOverview, c("race"))
-cleanedData<- cleanedData %>% group_by(race) %>% summarize(count=n()) %>% 
+```{r tablegroups, echo= FALSE}
+# #Grouping The Respondents By Sex
+# cleanedData<-omitNaForSpecificCols(dataOverview, c("sex"))
+# cleanedData<- cleanedData %>% group_by(sex) %>% summarize(count=n()) %>% 
+#     arrange(desc(sex),.by_group = TRUE)
+# knitr::kable(cleanedData, caption = "Sex Groups statistics")
+# #Grouping The Respondents By Race
+# cleanedData<-omitNaForSpecificCols(dataOverview, c("race"))
+# cleanedData<- cleanedData %>% group_by(race) %>% summarize(count=n()) %>% 
+#     arrange(desc(race),.by_group = TRUE)
+# knitr::kable(cleanedData, caption = "Race groups statistics")
+# #Grouping The Respondents By Age
+# cleanedData<-omitNaForSpecificCols(dataOverview, c("age"))
+# cleanedData<- cleanedData %>% group_by(age) %>% summarize(count=n()) %>% 
+#     arrange(desc(age),.by_group = TRUE)
+# knitr::kable(cleanedData, caption = "Age groups statistics")
+# #Grouping The Respondents By grade
+# cleanedData<-omitNaForSpecificCols(dataOverview, c("grade"))
+# cleanedData<- cleanedData %>% group_by(grade) %>% summarize(count=n()) %>% 
+#     arrange(desc(grade),.by_group = TRUE)
+# knitr::kable(cleanedData, caption = "Grade groups statistics")
+# #Grouping The Respondents By Sex & Race
+# cleanedData<-omitNaForSpecificCols(dataOverview, c("sex","race"))
+# cleanedData<-cleanedData %>% group_by(race, sex) %>% summarize(count=n()) %>% 
+#     arrange(desc(race),.by_group = TRUE)
+# knitr::kable(cleanedData, caption = "Race/Sex groups statistics")
+
+#Grouping all Respondents By Sex, Race,grade, and age
+cleanedData<-cleanedData<-omitNaForSpecificCols(dataOverview, c("sex","race","grade","age"))
+cleanedData<-cleanedData %>% group_by(race, sex,grade,age) %>% summarize(count=n()) %>% 
     arrange(desc(race),.by_group = TRUE)
-knitr::kable(cleanedData, caption = "Race groups statistics")
-#Grouping The Respondents By Age
-cleanedData<-omitNaForSpecificCols(dataOverview, c("age"))
-cleanedData<- cleanedData %>% group_by(age) %>% summarize(count=n()) %>% 
-    arrange(desc(age),.by_group = TRUE)
-knitr::kable(cleanedData, caption = "Age groups statistics")
-#Grouping The Respondents By grade
-cleanedData<-omitNaForSpecificCols(dataOverview, c("grade"))
-cleanedData<- cleanedData %>% group_by(grade) %>% summarize(count=n()) %>% 
-    arrange(desc(grade),.by_group = TRUE)
-knitr::kable(cleanedData, caption = "Grade groups statistics")
-#Grouping The Respondents By Sex & Race
-cleanedData<-omitNaForSpecificCols(dataOverview, c("sex","race"))
-cleanedData<-cleanedData %>% group_by(race, sex) %>% summarize(count=n()) %>% 
-    arrange(desc(race),.by_group = TRUE)
-knitr::kable(cleanedData, caption = "Race/Sex groups statistics")
+pander(ExpCTable(cleanedData), caption = "statistical summary of demographics groups")
 ```
 
 
 
+## Data Visualzation.
+
+This section  invistigate the relations between the diffrent variables of dataset and to visulize intresting insights from data.
+
+
+### Demographic Details (Age,Race,Sex, & Grade) of Respondents.
+
+
+Barplot measure the distribution of variables over the dataset, it can be usefull to indicate several informative insights such as the skewness of data, how observations are domininant to others.
+
+- Summary:
+
+It can be seen clearly Hispanic/Latinos, and Black/African Americans are dominants when compared to other races, most of data samples are aged above 14 years old, Male and females are distributed normally among all ges in dataset
 
 
 
-## Density Distribution (Demographics).
-
-```{r,  fig.width=10,fig.height=11 ,fig.cap= "Density plot"}
-
-cleanedData<-omitNaForSpecificCols(dataOverview, c("sex","race","grade","age"))
-par(mfrow=c(2,2))
-plot(density(unclass(cleanedData$age)), xlab = "Age",main = "ssksss")
-plot(density(unclass(cleanedData$race)), xlab = "Race",main = "")
-plot(density(unclass(cleanedData$sex)), xlab = "Sex",main = "")
-plot(density(unclass(cleanedData$grade)), xlab = "Grade",main = "")
-
-
-``` 
-
-
-```{r testchunk}
-
-# 
-# DataExplorer::plot_str(cleanedData)
-# 
-# DataExplorer::plot_missing(cleanedData)
-# 
-# DataExplorer::plot_density(cleanedData)
-# 
-# DataExplorer::plot_bar(cleanedData)
-
-library(SmartEDA)
-pander(ExpCTable(cleanedData))
-pander(ExpData(data, type = 2))
-
-
-```
-
-```{r fig.cap= "Density plot"}
-DataExplorer::plot_density(data[,c("sex","grade","age","race4")], ncol = 2L)
-# skim(data)
-```
-
-
-
-## Demographic Details(Age,Race,Sex & Grade) of Respondents    
-
-```{r,  fig.width=10,fig.height=11}
+```{r barplotdemographics,  fig.width=10,fig.height=11}
 cleanedData<-omitNaForSpecificCols(dataOverview, c("sex","race","grade","age"))
 #RESPONDENTS BY GENDER
 plot1<-ggplot(data = cleanedData, aes(x = sex,fill =sex)) + 
@@ -551,9 +543,20 @@ grid.arrange(plot1,plot2,plot3,plot4,plot5,plot6, ncol=2)
 
 ```
 
-## Victimization Proportion For The Given Data 
+### Victimization Proportion.
 
-```{r }
+This section invistigate the victimizations variables in dataset, which are ranged in ("qn16","qn17","qn19","qn20","qn21","qn24","qn25"), visulizing thoses variables gave us the following insights.
+
+- Summary: 
+
+**Victimization's highest percentage are:**    
+
+1. Fought school 1+ times 12 months : around 15%.
+2. Missed school b/c unsafe 1+ 30 days : around 12%.
+3. Bullied at school 12 months : around 12%.
+
+
+```{r barplotvictimization}
 
 cleanedData<-omitNaForSpecificCols(data, c("qn16","qn17","qn19","qn20","qn21","qn24","qn25"))
 par(mfrow=c(2,4), mgp=c(1,2,1), mar=c(2,3,4,1))
@@ -571,19 +574,26 @@ barplot(as.matrix(table(cleanedData$qn25)), xlab = 'Ebuilled', col = c("red", "g
         axes=FALSE)
 plot(1, type = "n", axes=FALSE, xlab="", ylab="")
 legend(x="center", inset=1, legend=c("No", "Yes"), col=c("grey", "red"), lwd=5, cex=1)
-mtext("Split of Victimization variables", side = 3, outer = TRUE, line=-2)
+mtext("Split of victimization variables", side = 3, outer = TRUE, line=-2)
 
 ```
 
-**Victimization's highest percentage are:**    
-
-1. Fought school 1+ times 12 months : around 15%
-2. Missed school b/c unsafe 1+ 30 days : around 12%
-3. Bullied at school 12 months : around 12%
 
 
-## Substance Use Proportion For The Given Data 
-```{r }
+### Substance Use Proportion.
+
+This section invistigates the substance use variables in dataset, which are ranges in ("qn33","qn37","qn43","qn45","qn47","qn50","qn51",qn52","qn53","qn54","qn55","qn56","qn57"), visualizing thoses variables gave us the following insights.
+
+
+- Summary:
+
+**Substance use highest percentage are:**    
+
+1.	Tried marijuana 1+ times in life : around 50%.
+2.	Had 1+ drinks past 30 days : around 39%.
+
+
+```{r barplotsubstanceuse}
 cleanedData<-omitNaForSpecificCols(data, c("qn33","qn37","qn43","qn45","qn47","qn50","qn51",
                                            "qn52","qn53","qn54","qn55","qn56","qn57"))
 par(mfrow=c(2,7), mgp=c(1,1,1), mar=c(2,3,4,1))
@@ -618,14 +628,25 @@ mtext("Substance Use", side = 3, outer = TRUE, line=-2)
 
 ```
 
-**Substance use highest percentage are:**    
-
-1.	Tried marijuana 1+ times in life : around 50%
-2.	Had 1+ drinks past 30 days : around 39%
 
 
-## Suicide Attempts Proportion For The Given Data 
-```{r }
+
+### Suicide Attempts Proportion.
+
+
+This section invistigates the substance use variables in dataset, which are ranges in ("qn27","qn28","qn29","qn30"),visualizing thoses variables gave us the following insights.
+
+
+- Summary:
+
+**Suicide attempts highest percentage are:**    
+
+1.	Considered suicide 12 month : around 16%.
+2.	Made suicide plan 12 moonth : around 14%.
+
+
+
+```{r barplotsucideattemps}
 cleanedData<-omitNaForSpecificCols(data, c("qn27","qn28","qn29","qn30"))
 par(mfrow=c(2,4), mgp=c(1,1,1), mar=c(2,3,4,1))
 barplot(as.matrix(table(cleanedData$qn16)), xlab = 'Considered Suicide',
@@ -643,31 +664,32 @@ mtext("Substance Use", side = 3, outer = TRUE, line=-2)
 
 ```
 
-**Suicide attempts highest percentage are:**    
-
-1.	Considered suicide 12 month : around 16%
-2.	Made suicide plan 12 moonth : around 14%
 
 
 \newpage
-# Data Preparation    
+# Data Preparation.   
 
 In the above section, we noticed that there are many NA values in the data.
-We check the number of missing values in each field using the following:   
-```{r,  fig.width=10,fig.height=11}
-    sapply(data, function(x) sum(is.na(x)))
-```
+We check the number of missing values in each field using the following function that generates the following insights.
+
+-Summary:
 
 Question 29, question 30 and question 43 have the most NA values. These are ‘Attempted suicide 1+ times 12 months, ‘Suicide attempt with injury 12 months and ‘Had 1+ drinks past 30 days’.
 
+```{r natable,  fig.width=10,fig.height=11}
+    pander(sapply(data, function(x) sum(is.na(x))), caption = "Na's values Table")
+```
 
-## Creating A Custom R Function To Handle Missing Data For Specific/All Observations
+
+
+
+## Creating A Custom R Function To Handle Missing Data For Specific/All Observations.
 **This function takes the dataset and the cols to omit the na values**    
 ```{r,  fig.width=10,fig.height=11}
-omitNaForSpecificCols <- function(d, desiredCols) {
-    completeVec <- complete.cases(d[, desiredCols])
-    return(d[completeVec, ])
-}
+# omitNaForSpecificCols <- function(d, desiredCols) {
+#     completeVec <- complete.cases(d[, desiredCols])
+#     return(d[completeVec, ])
+# }
 ```
 
 
@@ -678,8 +700,7 @@ omitNaForSpecificCols <- function(d, desiredCols) {
 dataCleaned<-omitNaForSpecificCols(data[0:29])
 
 #Confirm that, there is no missing values   
-sapply(dataCleaned, function(x) sum(is.na(x)))
-
+pander(sapply(dataCleaned, function(x) sum(is.na(x))), caption = "Total na values per column")
 ```
 
 ```{r fig.width=10,fig.height=11}
