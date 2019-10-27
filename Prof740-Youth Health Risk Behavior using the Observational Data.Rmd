@@ -108,11 +108,6 @@ if(!require(DataExplorer))
 
 
 
-```{r setup, echo=FALSE,fig.cap="test", out.width = '100%'}
-knitr::include_graphics("logo.png", auto_pdf = getOption("knitr.graphics.auto_pdf", FALSE), dpi = NULL)
-knitr::opts_chunk$set(warning=FALSE, message=FALSE)
-```
-
 
 <!-- 1- Find a dataset on google (for example, Kaggle) which has at least 8 attributes. The dataset may related to Retail, Telecom, Transportation, Health, Logistics, Banking and Finance, etc.  -->
 
@@ -139,6 +134,11 @@ knitr::opts_chunk$set(warning=FALSE, message=FALSE)
 <!--   - Explain the selected algorithm -->
 <!--   - Why you choose the algorithms -->
 <!-- 6- Evaluation -->
+
+```{r setup, echo=FALSE,fig.cap="test", out.width = '100%'}
+knitr::include_graphics("logo.png", auto_pdf = getOption("knitr.graphics.auto_pdf", FALSE), dpi = NULL)
+knitr::opts_chunk$set(warning=FALSE, message=FALSE, echo = FALSE)
+```
 
 # Executive Summary.
 
@@ -175,16 +175,10 @@ Health behaviors and experiences related to sexual behavior, high-risk substance
 ### Overview of CRISP-DM:
 
 
-CRISP-DM was conceived in 1996 and immature data mining market as a standrized process for data mining projects, The methodolgy provides an overview of the life cycle of a data mining project, In six major steps; Bussniess understanding, Data understanding, Data preparation, Modeling, And Evaluation. According to latest poll (2014) results by https://www.kdnuggets.com/, crisp-dm methodology is still the most popular data mining with 43%, placed by SEMMA by SAS institute, and followed by KDD process.
-
-Why is data mining important?
-
-Data mining is an innovative and potentially powerful business strategy. A great deal of work involves the analysis of large amounts of information in an attempt to discover underlying patterns in a large amount of data. The process is called data mining because data mining is a process that "mining" data to search for patterns. Such techniques can not only find hidden patterns but identify patterns that would be hard to find through traditional data mining methods.
+CRISP-DM was conceived in 1996 and immature data mining market as a standrized process for data mining projects, The methodolgy provides an overview of the life cycle of a data mining project, In six major steps; Bussniess understanding, Data understanding, Data preparation, Modeling, And Evaluation. According to latest poll (2014) results by https://www.kdnuggets.com/, crisp-dm methodology is still the most popular data mining with 43%, Next most populay method is SEMMA by SAS institute, and followed third by KDD process moethod.
 
 
 
-
-<!-- Refrence: https://www.kdnuggets.com/2014/10/crisp-dm-top-methodology-analytics-data-mining-data-science-projects.html -->
 
 
 **Note:**
@@ -545,7 +539,7 @@ grid.arrange(plot1,plot2,plot3,plot4,plot5,plot6, ncol=2)
 
 ### Victimization Proportion.
 
-This section invistigate the victimizations variables in dataset, which are ranged in ("qn16","qn17","qn19","qn20","qn21","qn24","qn25"), visulizing thoses variables gave us the following insights.
+This section invistigate the victimizations variables in dataset, which are ranged in vicitimizations groups variables, visulizing thoses variables gave us the following insights.
 
 - Summary: 
 
@@ -582,7 +576,7 @@ mtext("Split of victimization variables", side = 3, outer = TRUE, line=-2)
 
 ### Substance Use Proportion.
 
-This section invistigates the substance use variables in dataset, which are ranges in ("qn33","qn37","qn43","qn45","qn47","qn50","qn51",qn52","qn53","qn54","qn55","qn56","qn57"), visualizing thoses variables gave us the following insights.
+This section invistigates the substance use variables in dataset, which are ranges in Substance use groups variables, visualizing thoses variables gave us the following insights.
 
 
 - Summary:
@@ -634,7 +628,7 @@ mtext("Substance Use", side = 3, outer = TRUE, line=-2)
 ### Suicide Attempts Proportion.
 
 
-This section invistigates the substance use variables in dataset, which are ranges in ("qn27","qn28","qn29","qn30"),visualizing thoses variables gave us the following insights.
+This section invistigates the substance use variables in dataset, which are ranges in suicide attemps groups variables,visualizing thoses variables gave us the following insights.
 
 
 - Summary:
@@ -666,61 +660,104 @@ mtext("Substance Use", side = 3, outer = TRUE, line=-2)
 
 
 
-\newpage
-# Data Preparation.   
+
+# Data Preparation.
 
 In the above section, we noticed that there are many NA values in the data.
-We check the number of missing values in each field using the following function that generates the following insights.
+We checked the number of missing values in each field using the following function that generates the following insights.
 
 -Summary:
 
 Question 29, question 30 and question 43 have the most NA values. These are ‘Attempted suicide 1+ times 12 months, ‘Suicide attempt with injury 12 months and ‘Had 1+ drinks past 30 days’.
 
-```{r natable,  fig.width=10,fig.height=11}
+```{r na-table,  fig.width=10,fig.height=11}
     pander(sapply(data, function(x) sum(is.na(x))), caption = "Na's values Table")
 ```
 
 
+## Cleaning Data Using "omitNaForSpecificCols" Custom Function.
 
+As a first step Here we clean all dataset of any non needed variable, and invistigate if we still have any missing value.
 
-## Creating A Custom R Function To Handle Missing Data For Specific/All Observations.
-**This function takes the dataset and the cols to omit the na values**    
-```{r,  fig.width=10,fig.height=11}
-# omitNaForSpecificCols <- function(d, desiredCols) {
-#     completeVec <- complete.cases(d[, desiredCols])
-#     return(d[completeVec, ])
-# }
-```
-
-
-## Cleaning The Data Using "omitNaForSpecificCols" Custom Function    
-
-```{r fig.width=10,fig.height=11}
+```{r cleanall}
 #Clean the overall data since we are going to use all variables except demographic
 dataCleaned<-omitNaForSpecificCols(data[0:29])
 
 #Confirm that, there is no missing values   
 pander(sapply(dataCleaned, function(x) sum(is.na(x))), caption = "Total na values per column")
-```
-
-```{r fig.width=10,fig.height=11}
-#View brief details of the cleaned data
 
 displayTable<- head(dataCleaned[1:3,2:10])
-knitr::kable(displayTable)
+pander(displayTable, caption = "sample of clean dataset")
 
 ```
 
 
-## Data Aggregation    
-In this section, we also do some data transformations that will help in analysis and modeling. Specifically, we do the following:    
+
+## Correlation Matrix Of Variables.
+
+Correlation used in EDA to  measures the strengths of association between two variables., the value of the correlation coefficient varies between +1 and -1. 1.0 (a perfect positive correlation) and -1.0 (a perfect negative correlation). A 0 indicates no association between ranks. spearman correlation chioce came from the non-linear relation between the variable
+
+
+Spearman correlation formula:
+
+$$\rho = 1- {\frac {6 \sum d_i^2}{n(n^2 - 1)}}$$
+
+where:
+
+
+d = the pairwise distances of the ranks of the variables xi and yi.
+
+
+n = the number of samples.
+
+
+- Summary:
+
+Students Who have been on substance use are high level of sucide thoughts, and attempts.
+
+
+Unsafe students are on high level to be exposed to drugs substance.
+
+
+
+students who have been builled, have an experince or E-builled.
+
+
+
+```{r spearman, fig.asp = .70, fig.cap= "Spearman corrplot "}
+
+# corr <- cor(dataCleaned, method = "spearman")
+
+
+corrplot(cor(dataCleaned, method = "spearman")
+         ,method="color", order="hclust", 
+         tl.col="black", tl.srt=90)
+# source of using spearman correlation
+# https://www.statisticssolutions.com/wp-content/uploads/wp-post-to-pdf-enhanced-cache/1/correlation-pearson-kendall-spearman.pdf
+```
+
+
+
+
+
+
+
+\newpage
+## Data Aggregation.
+
+In this section, we also do some data transformations that will help in analysis and modeling. Specifically, we do the following steps:    
 
 1.	Combine variables for victimization, suicide and substance use into one variable each.
-2.	Convert the clean data into transaction format to do association analysis
-The above steps are performed below.
+
+2.	Convert the clean data into transaction format to do association analysis.
 
 
-```{r fig.width=10,fig.height=11}
+### Combine variables for victimization, suicide and substance use into one variable each.
+
+Here we combined all the victimization variable and combine them into one binary encoded for each one.
+
+
+```{r aggregate}
 # Initializing three aggregated columns for victimization,substance use and suicide attempt
 dataCleaned$victimization <- ""
 dataCleaned$substanceUse <- ""
@@ -770,12 +807,23 @@ dataCleaned$suicideAttempt <- apply(dataCleaned[,c(suicideVariables)], 1,
 
 #View brief details of aggregated data
 displayTable<-head(dataCleaned[30:32], n=5)
-knitr::kable(displayTable)
+knitr::kable(displayTable, caption = "Encoded data sample")
 
 ```
 
 
-```{r fig.width=10,fig.height=11}   
+
+### Convert Clean Data Into Transaction Format For Association Analysis (Aggregated columns).
+
+Here a last step before implement the model, aggregated columns herewill be converted into a transactional form to apply appriori rules analysis.
+
+- Summary:
+
+Most frequent transactional items are the highest in SubstanseUse, Then victimizarion, And  Last suicideAttempts.
+
+
+
+```{r associate}   
 
 #Generating data in transaction format to do association rules analysis
 dataCleanedAggregatedTransactions <- data.frame(record=character(), qn=character(), 
@@ -800,7 +848,16 @@ summary(dataCleanedAggregatedTransactions)
 crossTable(dataCleanedAggregatedTransactions)
 ```
 
-```{r fig.width=10,fig.height=11}
+### Convert Clean Data Into Transaction Format For Association Analysis (non aggregated Columns, except demographics data).
+
+Here will include all variables except demographics one, to see what are most frequentset.
+
+- Summary:
+
+Most frequent items are student who some marijuana, then who drinks more than one time in last 30 days, and last are students who considered suicide.
+
+
+```{r associate2}
 
 #Generating data in transaction format to do association rules analysis for all items
 dataCleanedTransactions <- data.frame(record=character(), qn=character(), 
@@ -820,29 +877,26 @@ for (i in 1:nrow(dataCleaned)){
 dataCleanedTransactions <- as(split(dataCleanedTransactions[,"qn"], 
                                     dataCleanedTransactions[,"record"]), "transactions")
 summary(dataCleanedTransactions)
-
 ```
 
-```{r fig.width=10,fig.height=11}
 
-# corr <- cor(dataCleaned, method = "spearman")
-
-#corplot <- colorRampPalette(c("#BB4444", "#EE9988", "#FFFFFF", "#77AADD", "#4477AA"))
-corrplot(cor(dataCleaned, method = "spearman")
-         ,method="color", order="hclust", 
-         tl.col="black", tl.srt=90)
-
-# source of using spearman correlation
-# https://www.statisticssolutions.com/wp-content/uploads/wp-post-to-pdf-enhanced-cache/1/correlation-pearson-kendall-spearman.pdf
-```
 
 \newpage
-# Modeling 
 
-## Association Rules Algorithms(Apriori & Eclat)
+# Modeling.
 
-### Generate Association Rules For All Itemsets Without Aggregation(Victimization,Substance & Suicide)  
-```{r fig.width=10,fig.height=11}
+This section will implement the usage of several algoritms, on our dataset, for for mining frequent item sets apriori and ecalt algorithms will used as a model to analyize our encooded transactional dataset as a part of our unsupervised learning section, apriori and Ecalt are one of the most used algorithms to mine such a type of dataset to represent transactions lists and to filter closed and maximalitem sets, the second part will go through a supervised learning model of desicion tree  to understand what influences suicide attempts as a target variable in dataset. models parameter will be set as the default settings.
+
+
+
+## Association Rules Algorithms (Apriori & Eclat).
+
+### Generate Association Rules For All Itemsets Without Aggregation (Victimization,Substance & Suicide).
+
+#### Models Parameters.
+
+
+```{r agg}
 
 #Getting frequent k-itemsets using eclat
 eclatRules <- eclat(dataCleanedTransactions, parameter = list(supp = 0.1,minlen=2))
@@ -855,20 +909,37 @@ aprioriRules <- apriori(dataCleanedTransactions, parameter = list(supp=0.1,
 aprioriRules<-aprioriRules[-(which(duplicated(
     generatingItemsets(aprioriRules))))]
 
+```
+
+
+
+#### Models Results.
+
+
+##### AprioriRules Model Results.
+
+
+```{r  inspectarules}
 
 #Inspect the association rules generated apriori
 inspect(aprioriRules)
-
 ```
-```{r fig.width=10,fig.height=11}
+
+##### Ecalt Model Results.
+
+
+```{r inspectecalt}
 #Inspect the association rules generated eclat
 inspect(eclatRules)
-
 ```
 
-### Generate For All Itemsets With Aggregation(Victimization,Substance & Suicide) 
 
-```{r fig.width=10,fig.height=11}
+
+### Generate For All Itemsets With Aggregation (Victimization,Substance & Suicide).
+
+### Models Parameters.
+
+```{r noagg}
 
 # Getting frequent k-itemsets
 eclatRules <- eclat(dataCleanedAggregatedTransactions, parameter = list(supp = 0.1,minlen=2))
@@ -880,18 +951,31 @@ aprioriAggregatedRules <- apriori(dataCleanedAggregatedTransactions, parameter =
 aprioriAggregatedRules<-aprioriAggregatedRules[-(which(duplicated(
     generatingItemsets(aprioriRules))))]
 
-#Inspect the association rules generated apriori
-inspect(aprioriAggregatedRules)
-
+########
 ```
 
-```{r fig.width=10,fig.height=11}
+### Models Results.
+
+##### AprioriRules Model Results.
+
+```{r inspectarules2}
+#Inspect the association rules generated apriori
+inspect(aprioriAggregatedRules)
+```
+
+
+
+
+```{r inspectecalt2}
 #Inspect the association rules generated eclat
 inspect(eclatRules)
 ```
 
-### Graphing The Strong Association Rules Without Aggregation(Victimization,Substance & Suicide) 
-```{r }
+
+
+### Graphing The Strong Association Rules Without Aggregation(Victimization,Substance & Suicide).
+
+```{r graph1}
 #Graph of association rules for all items for minimum support of 0.1 
 #and minimum confidence of 0.2
 set.seed(1234)
@@ -900,8 +984,9 @@ plot(aprioriRules, method='graph', shading='confidence',
 ```
 
 
-### Graphing The Strong Association Rules With Aggregation(Victimization,Substance & Suicide) 
-```{r }
+### Graphing The Strong Association Rules With Aggregation(Victimization,Substance & Suicide).
+
+```{r graph2}
 #Graph of association rules Aggregating(Victimization,Substance & Suicide) 
 #for minimum support of 0.1 and minimum confidence of 0.2    
 set.seed(1234)
@@ -915,18 +1000,20 @@ plot(aprioriRules, method='graph', shading='confidence',
 
 
 
-## Decision Tree
+## Decision Tree.
 
-Apply machine learning techniques to automatically segment the class grade and determine how well these derived groupings correspond to victimization and suicide attempt
+Here will apply desicion tree algorithm to automatically segment the class grade and determine how well these derived groupings correspond to victimization and suicide attempt.
 
-### Viewing the structure of the observations for class grade and it's relation with victimization and suicide attempts
+### Viewing the structure of the observations for class grade and it's relation with victimization and suicide attempts.
+
 ```{r }
 # Decision Tree to predict suicide attempt
 dtData <- dataCleaned[,c("Grade", "substanceUse", "victimization", "suicideAttempt")]
 dtData$substanceUse <- as.factor(dtData$substanceUse)
 dtData$victimization <- as.factor(dtData$victimization)
 dtData$suicideAttempt <- as.factor(dtData$suicideAttempt)
-str(dtData)
+#str(dtData)
+pander(summary(dtData), caption = "Structure of Decision Tree variables")
 ```
 
 ```{r }
@@ -939,7 +1026,7 @@ knitr::kable(displayTable)
 ```
 
 
-### Create Train and Test Samples
+### Create Train and Test Samples.
 ```{r }
 # Create train and test datasets
 set.seed(1234)
@@ -965,9 +1052,9 @@ dtModel<-rpart(Grade~substanceUse+victimization+suicideAttempt,trainData,method 
 dtModel
 ```
 ### Visualization Model Decision Tree Based On Training Data
-```{r }
+```{r viztree }
 #Visualization of decision tree
-rpart.plot(dtModel,type =2, extra=102)
+rpart.plot(dtModel,type =2, extra=102,)
 ```
 
 ### Creating Prediction Model 
@@ -978,6 +1065,7 @@ pModel<-rpart.predict(dtModel, testData, type = "class")
 plot(pModel)
 #View the prediction model
 ```
+
 ```{r }
 #Show the table of the results 
 table(testData[,4], pModel)
@@ -986,7 +1074,7 @@ table(testData[,4], pModel)
 
 
 
-### Create additional model based o
+### Create additional model based oneR
 ```{r }
 # #Create A Model
 # dtModel<-rpart(Grade~substanceUse+victimization+suicideAttempt,trainData,method = "class",
@@ -1000,7 +1088,8 @@ table(testData[,4], pModel)
 # eval_model(prediction_r, data)
 ```
 
-# Conclusion 
+# Conclusion.
+
 In this project, we studied the Youth Health Risk Behavior using the Observational Data to examine the relations between victimization, substance use and suicide attempt. We used the apriori algorithm to understand strong associations and built a decision tree to understand what influences suicide attempt.
 The results of this project tells us that adolescents who consider or attempt suicide tend to use substances. By assessing whether an adolescent was victimized and by looking at their sex, it is possible to predict if they are more likely to consider or attempt suicide.   This type of analysis is very important from a medical point of view. It provides a data supported backing of what doctors seem to already believe through experience. This also shows the importance of using machine learning techniques to answer key questions and find solutions in society.
 Overall, we were successful in identifying associations between victimization, substance use and suicide attempt. We can further improve this project by experimenting with other algorithms like logistic regression and random forest and by considering other types of groupings like race.
@@ -1010,11 +1099,8 @@ Overall, we were successful in identifying associations between victimization, s
 * [AS94] R. Agrawal and R. Srikant, Fast Algorithms for Mining Association Rules (1994) Proc. 20th Int. Conf. Very Large Data Bases, VLDB-94. http://www.vldb.org/conf/1994/P487.PDF
 
 
-
+\newpage
 # Appendices
-
-
-## Load Required Libraries
 
 ```{r}
 #install.packages("dplyr")
@@ -1044,7 +1130,7 @@ Overall, we were successful in identifying associations between victimization, s
 
 ### Session Information.
 
-Listing Machine been used for the project, operating system, R version, And used libraries with their versions for future repreducbility of the project.
+Listing Machine that have been used for the project, operating system, R version, And used libraries with their versions for future repreducbility of the project.
 
 
 
