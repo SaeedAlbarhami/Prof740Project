@@ -103,6 +103,12 @@ if(!require(DataExplorer))
   install.packages("DataExplorer")
   library(DataExplorer)
 }
+
+if(!require(SmartEDA))
+{
+  install.packages("SmartEDA")
+  library(DataExplorer)
+}
 ```
 
 
@@ -267,21 +273,8 @@ displayTable <-head(data[2:15], n=2)
 pander(displayTable, caption = "Sample of observations with Empty values")
 pander(introduce(data), caption = "Describe basic informations of dataset")
 DataExplorer::plot_intro(data, title = "Plot of dataset information")
-DataExplorer::plot_missing(data, title = "Plot of dataset missing values")
+DataExplorer::plot_missing(data, title = "Plot of dataset missing values",)
 ```
-
-
-```{r skimr}
-#library(skimr)
-#library(kableExtra)
-#skim(data) %>% skimr::kable( booktabs = T, caption = "Sample of observations with Empty values")
-# 
-# library(pander)
-# panderOptions('knitr.auto.asis', FALSE)
-# skim(data) %>% pander()
-
-```
-
 
 
 ```{r  samplewithNAs}
@@ -293,7 +286,6 @@ pander(displayTable, caption = "Sample of observations with Empty values")
 - Summary:
 
 It is clear that, there are many NA values in the data. that will addresed and preprocessed in the following steps.  
-
 
 
 ## Demographic Variables Description
@@ -322,8 +314,6 @@ Data from the questions are all dichotomous (ordinal) as numerical values  with 
 
 
 - Considering "1" corresponds to  "Yes" and "2" corresponds to a "No".
-
-
 
 
 # Data Preprocessing (Demographics)
@@ -812,7 +802,6 @@ knitr::kable(displayTable, caption = "Encoded data sample")
 ```
 
 
-
 ### Convert Clean Data Into Transaction Format For Association Analysis (Aggregated columns).
 
 Here a last step before implement the model, aggregated columns herewill be converted into a transactional form to apply appriori rules analysis.
@@ -915,7 +904,6 @@ aprioriRules<-aprioriRules[-(which(duplicated(
 
 #### Models Results.
 
-
 ##### AprioriRules Model Results.
 
 
@@ -947,9 +935,6 @@ eclatRules <- eclat(dataCleanedAggregatedTransactions, parameter = list(supp = 0
 # Finding strong association rules
 aprioriAggregatedRules <- apriori(dataCleanedAggregatedTransactions, parameter = 
                                       list(supp=0.1, minlen=2,  conf=0.2))
-#Remove deplicate itemsets if you are using apriori(lhs,rhs)
-aprioriAggregatedRules<-aprioriAggregatedRules[-(which(duplicated(
-    generatingItemsets(aprioriRules))))]
 
 ########
 ```
