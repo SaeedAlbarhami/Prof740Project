@@ -130,7 +130,6 @@ if(!require(OneR))
 
 
 ```{r setup, echo=FALSE,fig.cap="test", out.width = '100%'}
-knitr::include_graphics("logo.png", auto_pdf = getOption("knitr.graphics.auto_pdf", FALSE), dpi = NULL)
 knitr::opts_chunk$set(warning=FALSE, message=FALSE, echo = FALSE)
 ```
 
@@ -258,7 +257,8 @@ displayTable <-head(data[2:15], n=2)
 pander(displayTable, caption = "Sample of observations with Empty values")
 pander(introduce(data), caption = "Describe basic informations of dataset")
 DataExplorer::plot_intro(data, title = "Plot of dataset information")
-DataExplorer::plot_missing(data, title = "Plot of dataset missing values",)
+# DataExplorer::plot_missing(data, title = "Plot of dataset missing values")
+DataExplorer::plot_missing(data,title = "Plot of dataset missing values", geom_label_args = list("size" = 2, "label.padding" = unit(0.1, "lines")))
 ```
 
 
@@ -301,7 +301,7 @@ Data from the questions are all dichotomous (ordinal) as numerical values with l
 - Considering "1" corresponds to  "Yes" and "2" corresponds to a "No".
 
 
-# Data Preprocessing (Demographics)
+# Data Preprocessing.
 
 This section will implement a data cleaning process for all non-needed variables. 
 
@@ -669,8 +669,7 @@ n = the number of samples.
 
 
 - students who have been bullied (qn24) in school, have an experience of E-builled (qn25).
-
-```{r spearman, fig.asp = .70, fig.cap= "Spearman corrplot "}
+```{r spearman}
 corrplot(cor(dataCleaned, method = "spearman")
          ,method="color", order="hclust", 
          tl.col="black", tl.srt=90)
@@ -983,7 +982,7 @@ plot(pModel)
 table(testData[,4], pModel)
 ```
 
-## Create additional model based oneR.
+## Create additional model based on oneR.
 
 ### Model Summary.
 
@@ -997,17 +996,11 @@ summary(dtModel)
 
 ### Model Visualzation.
 
-```{r oneRplot, fig.cap= 'OneR tree'}
+```{r oneRplot}
 oner_ctree <- ctree(Grade~substanceUse+victimization+suicideAttempt,trainData)
-
-
-
-plot(oner_ctree)
-
+plot(oner_ctree, main="OneR Tree")
 # prediction <- predict(dtModel, trainData)
 #eval_model(prediction, testData)
-
-
 ```
 
 # Conclusion.
