@@ -4,10 +4,10 @@ subtitle:
 - "Submitted as final project fulfillment of Course: ISTE790 Data Analytics for Emerging Technologies"
 author: 
 - "**Group: 5**"
-- (Saeed Albarhami, Abdullah Hussein)
+- (Saeed Albarhami, Abdullah Hussein, Matter Al Marri, Ahmad Al Ali, Tariq Al Behandy)
 date: "`r format(Sys.time(), '%d %B %Y')`"
 abstract: 
-- "The objective of this paper is to use data mining techniques to analyze the 2013 Chicago youth risk behavior surveillance survey data,Collected by the centers for Disease Control and Prevention in USA, to investigate interesting relations and patterns in collected data, and provide a recommendation based on findings that been discovered by  applying machine learning algorithms such apriori decision tree...etc. following CRISP-DM steps methodology, staring by business understanding, data understanding, data preparation, modeling, and evaluation. R open-source software will be used among all the process steps."
+- "The objective of this paper is to use data mining techniques to analyze the 2013 Chicago youth risk behavior surveillance survey data,Collected by the centers for Disease Control and Prevention in USA, to investigate interesting relations and patterns in collected data, and provide a recommendation based on findings that been discovered by  applying machine learning algorithms such apriori decision tree etc. following CRISP-DM steps methodology, staring by business understanding, data understanding, data preparation, modeling, and evaluation. R open-source software will be used among all the process steps."
 output:
   pdf_document:
     fig_caption: yes
@@ -259,6 +259,7 @@ pander(introduce(data), caption = "Describe basic informations of dataset")
 DataExplorer::plot_intro(data, title = "Plot of dataset information")
 # DataExplorer::plot_missing(data, title = "Plot of dataset missing values")
 DataExplorer::plot_missing(data,title = "Plot of dataset missing values", geom_label_args = list("size" = 2, "label.padding" = unit(0.1, "lines")))
+
 ```
 
 
@@ -806,10 +807,9 @@ dataCleanedTransactions <- as(split(dataCleanedTransactions[,"qn"],
 summary(dataCleanedTransactions)
 ```
 
-# Modeling.
+# Modeling and Evaluation
 
 This section will implement the usage of several algorithms, on our dataset, for mining frequent itemsets apriori and Ecalt algorithms will be used as a model to analyze our encoded transactional dataset as a part of our unsupervised learning section, apriori and Ecalt are one of the most used algorithms to mine such a type of dataset to represent transactions lists and to filter closed and maximum item sets, the second part will go through a supervised learning model of decision tree to understand what influences suicide attempts as a target variable in dataset. models parameter will be set as the default settings.
-
 
 
 ## Association Rules Algorithms (Apriori & Eclat).
